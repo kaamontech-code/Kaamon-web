@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KaamOn Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1EEE8;--card:#FFFFFF;--ink:#231F1C;--mut:#6B645D;--brick:#B8432A;--brick2:#962F1A;--onb:#FFFFFF;--turm:#E9A820;--line:#E2DDD3;--ok:#2F7A4B;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#171412;--card:#221D1A;--ink:#F3EDE3;--mut:#A59B8F;--brick:#E2694B;--brick2:#C9553A;--onb:#1B0F0B;--turm:#EDB43D;--line:#3A322C;--ok:#5FB07A}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-text-size-adjust:100%}
+a{color:var(--brick)}
+:focus-visible{outline:3px solid var(--turm);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.w{max-width:560px;margin:0 auto;padding:18px 16px 40px}
+h1{font-size:22px;font-weight:600;letter-spacing:-.02em;margin:0 0 14px}h1 span{color:var(--turm)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.st b{display:block;font:600 20px/1.2 var(--mono)}.st small{color:var(--mut);font-size:12px}
+.f{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.f button{height:36px;padding:0 14px;border:1.5px solid var(--line);border-radius:99px;background:var(--card);color:var(--ink);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.f button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;word-break:break-word}
+.card.done,.card.approved{border-left:5px solid var(--ok)}.card.pending,.card.open{border-left:5px solid var(--turm)}
+.card.full{border-left:5px solid var(--ink)}.card.cancelled,.card.blocked{border-left:5px solid var(--line);opacity:.7}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:1px 9px;border-radius:99px;border:1px solid var(--line);margin-left:6px;background:var(--bg)}
+.a{display:flex;gap:6px;margin-top:10px}
+.a button{flex:1;height:38px;border:0;border-radius:9px;background:var(--ink);color:var(--bg);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.a .r{background:var(--brick);color:var(--onb)}.a .g{background:var(--ok);color:#fff}
+.empty{color:var(--mut);text-align:center;padding:20px}
+.big{height:48px;border:0;border-radius:12px;background:var(--brick);color:var(--onb);font:inherit;font-weight:600;width:100%;cursor:pointer}
+.sub{color:var(--mut);font-size:12px;margin:2px 0 8px}
+input:not([type]),input[type=text]{width:100%;height:44px;padding:0 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+.ck{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:13px}
+</style></head><body><div class="w">
+<h1>KaamOn<span>.</span> Admin</h1><div id="main"><div class="empty">Loading...</div></div></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,updateDoc,deleteDoc,doc,onSnapshot,query,orderBy,deleteField} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const ADMIN="kaamontech@gmail.com";
+const firebaseConfig={apiKey:"AIzaSyA5_H4XPxVfszSqjIIt_Z6ts60g0iY2yVM",authDomain:"kaamon-web.firebaseapp.com",projectId:"kaamon-web",storageBucket:"kaamon-web.firebasestorage.app",messagingSenderId:"545693200472",appId:"1:545693200472:web:a3bdeae4059c57e6fb9a2d"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+let AV={},RAT=[],tab="users",flt="all",users=[],shifts=[],unsubs=[],err="";const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr=n=>"\u20b9"+Number(n).toLocaleString("en-IN");
+const NAMES={open:"OPEN",full:"FULL",done:"COMPLETED",cancelled:"CANCELLED",expired:"EXPIRED"};
+const okMap=u=>/^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|www\.google\.com\/maps|google\.com\/maps|maps\.google\.com)(\/|\?|$)/.test(u||"");
+const fmtDate=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||"")?new Date(d+"T00:00").toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"}):(d||"");
+const fmtT=t=>/^\d{2}:\d{2}$/.test(t||"")?new Date("2000-01-01T"+t).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",hour12:true}).toUpperCase():(t||"");
+const slotsOf=s=>Object.entries(s.slots||{}).map(([uid,v])=>({uid,...v}));
+function stat(s){if(s.status=="cancelled")return "cancelled";if(!s.needed)return s.status||"open";const L=slotsOf(s);if(L.length&&L.filter(w=>w.status=="done").length>=s.needed)return "done";if(L.length>=s.needed)return "full";if(s.startAt&&Date.now()>s.startAt+s.hours*3600000)return "expired";return "open"}
+
+const ls=k=>{try{return localStorage.getItem(k)||""}catch(e){return ""}};
+const lss=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const pad=n=>String(n).padStart(2,"0");
+const tsMs=v=>v&&v.toMillis?v.toMillis():null;
+const dtm=ms=>ms?new Date(ms).toLocaleString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",hour12:true}):"";
+const hm=ms=>new Date(ms).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",hour12:true}).toUpperCase();
+const nameOf=uid=>(users.find(u=>u.id==uid)||{}).name||uid;
+let syncMsg="",syncTimer=null;
+
+function dataSets(forSheet){
+ const T=v=>forSheet&&v?"'"+v:v;
+ const rt=(sid,by,to)=>RAT.find(r=>r.shift==sid&&r.by==by&&r.to==to);
+ const real=shifts.filter(s=>s.needed);
+ const U=[["Name","Role","Status","Mobile","Email","Registered","Average rating","Ratings received"]].concat(users.map(x=>[x.name,x.role,x.status,T(x.phone),x.email,dtm(tsMs(x.created)),AV[x.id]?(AV[x.id].s/AV[x.id].n).toFixed(2):"",AV[x.id]?AV[x.id].n:0]));
+ const S=[["Shift ID","Business","Worker type","Venue","Date","Start","End","Hours","Rate per hour","Workers needed","Workers taken","Total value","Status","Posted","Map link","Dress code","Notes"]].concat(real.map(s=>[s.id,s.ownerName||"",s.trade||"waiter",s.venue,s.date,fmtT(s.time),s.startAt?hm(s.startAt+s.hours*3600000):"",s.hours,s.rate,s.needed,slotsOf(s).length,s.rate*s.hours*s.needed,stat(s),dtm(tsMs(s.created)),s.map||"",s.dress||"",s.notes||""]));
+ const W=[["Shift ID","Business","Venue","Date","Worker","Worker type","Status","Pay method","UPI ID","Amount","Marked paid","Receipt confirmed","Started","Finished","Minutes worked","Business rating of worker","Worker rating of business"]];
+ real.forEach(s=>slotsOf(s).forEach(w=>{const st=tsMs(w.startedAt),en=tsMs(w.endedAt),a1=rt(s.id,s.owner,w.uid),a2=rt(s.id,w.uid,s.owner);
+  W.push([s.id,s.ownerName||"",s.venue,s.date,w.name,s.trade||"waiter",w.status,w.pay||"cash",w.upi||"",s.rate*s.hours,w.paid?"yes":"no",w.received?"yes":"no",dtm(st),dtm(en),st&&en?Math.round((en-st)/60000):"",a1?a1.stars:"",a2?a2.stars:""])}));
+ const R=[["Shift ID","Venue","From","To","Stars","Comment","Date"]].concat(RAT.map(r=>[r.shift,(shifts.find(s=>s.id==r.shift)||{}).venue||"",nameOf(r.by),nameOf(r.to),r.stars,r.comment||"",dtm(tsMs(r.created))]));
+ return {users:U,shifts:S,workers:W,ratings:R}}
+
+function toCSV(rows){return "\ufeff"+rows.map(r=>r.map(v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(",")).join("\r\n")}
+function download(name,rows){const b=new Blob([toCSV(rows)],{type:"text/csv;charset=utf-8"}),l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="kaamon-"+name+"-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(l.href),3000)}
+
+async function syncSheet(){
+ const url=ls("kg_sheet_url").trim(),tok=ls("kg_sheet_tok");
+ const say=t=>{syncMsg=t;const m=$("sm");if(m)m.textContent=t};
+ if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\/]+\/exec/.test(url)){say("Paste the web app link that ends with /exec.");return}
+ if(!tok){say("Enter the secret word.");return}
+ const D=dataSets(true);
+ try{await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:tok,users:D.users,shifts:D.shifts,workers:D.workers,ratings:D.ratings})});
+  say("Sent at "+new Date().toLocaleTimeString("en-IN")+". Open your Google Sheet to check. If it is empty, the secret word may not match.")}
+ catch(e){say("Could not send: "+e.message)}}
+function queueSync(){if(ls("kg_sheet_auto")!="1"||!ls("kg_sheet_url"))return;clearTimeout(syncTimer);syncTimer=setTimeout(syncSheet,20000)}
+
+let LEADS=[];
+function leadsPanel(){
+ if(!LEADS.length)return '<div class="empty">No sign-ups from the website yet.</div>';
+ const T={business:"business",waiter:"waiter",helper:"helper",curious:"curious"};
+ return '<div class="sub">'+LEADS.length+' website sign-up'+(LEADS.length>1?"s":"")+'</div>'+LEADS.map(x=>`<div class="card"><b>${esc(x.name)}</b><span class="tag">${esc(T[x.who]||x.who)}</span><br><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a> \u00b7 <a href="https://wa.me/91${esc(x.phone)}" target="_blank" rel="noopener">WhatsApp</a><br><span class="sub">${esc(x.area||"")} \u00b7 ${esc(dtm(tsMs(x.created)))}</span><div class="a"><button data-dl="${x.id}">Delete</button></div></div>`).join("")}
+function dataPanel(){
+ return `<div class="card"><b>Download as CSV</b><div class="sub">Open the file in Google Sheets or Excel.</div>
+ <div class="a" style="flex-wrap:wrap"><button data-csv="users">Users</button><button data-csv="shifts">Shifts</button><button data-csv="workers">Worker pay and time</button><button data-csv="ratings">Ratings</button></div></div>
+ <div class="card"><b>Sync to Google Sheet</b><div class="sub">Paste the web app link from your sheet's script, and the secret word you set in it.</div>
+ <input id="su" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(ls("kg_sheet_url"))}"><input id="st" placeholder="Secret word" value="${esc(ls("kg_sheet_tok"))}" style="margin-top:8px">
+ <label class="ck"><input type="checkbox" id="sa" ${ls("kg_sheet_auto")=="1"?"checked":""}> Keep syncing while this page is open</label>
+ <div class="a"><button class="g" data-sync="1">Sync now</button></div><div id="sm" class="sub" style="margin-top:8px">${esc(syncMsg)}</div></div>`}
+
+function draw(){
+ const u=auth.currentUser;
+ if(document.activeElement&&document.activeElement.tagName=="INPUT")return;
+ if(!u){$("main").innerHTML='<button class="big" id="login">Sign in with Google</button>'+(err?'<p>'+esc(err)+'</p>':"");return}
+ if((u.email||"").toLowerCase()!==ADMIN){$("main").innerHTML='<div class="empty">This account is not allowed here.</div><button class="big" id="out">Sign out</button>';return}
+ const pend=users.filter(x=>x.status=="pending").length,openS=shifts.filter(s=>stat(s)=="open").length,act=shifts.filter(s=>stat(s)=="full").length,done=shifts.filter(s=>stat(s)=="done"),paid=shifts.reduce((t,s)=>t+s.rate*s.hours*slotsOf(s).filter(w=>w.status=="done").length,0);
+ let h='<div class="stats">'+[["Pending users",pend],["Open shifts",openS],["Active",act],["Completed",done.length],["Users",users.length],["Worker pay",inr(paid)]].map(x=>`<div class="st"><b>${x[1]}</b><small>${x[0]}</small></div>`).join("")+'</div>';
+ h+='<div class="f"><button data-t="users" class="'+(tab=="users"?"on":"")+'">Users</button><button data-t="shifts" class="'+(tab=="shifts"?"on":"")+'">Shifts</button><button data-t="leads" class="'+(tab=="leads"?"on":"")+'">Leads</button><button data-t="data" class="'+(tab=="data"?"on":"")+'">Data</button><button id="out">Sign out</button></div>';
+ if(err)h+='<p>'+esc(err)+'</p>';
+ if(tab=="users"){
+  const L=users.slice().sort((a,b)=>(a.status=="pending"?0:1)-(b.status=="pending"?0:1));
+  h+=L.length?L.map(x=>`<div class="card ${x.status}"><b>${esc(x.name)}</b><span class="tag">${esc(x.role)}</span>${AV[x.id]?`<span class="tag">★ ${(AV[x.id].s/AV[x.id].n).toFixed(1)} (${AV[x.id].n})</span>`:""}<span class="tag">${esc(x.status)}</span><br>${esc(x.email)}<br><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a> · <a href="https://wa.me/91${esc(x.phone)}" target="_blank" rel="noopener">WhatsApp</a>
+  <div class="a">${x.status!="approved"?`<button class="g" data-ap="${x.id}">Approve</button>`:""}${x.status!="blocked"?`<button class="r" data-bl="${x.id}">Block</button>`:""}<button data-du="${x.id}">Delete</button></div></div>`).join(""):'<div class="empty">No users yet.</div>'}
+ else if(tab=="shifts"){
+  h+='<div class="f">'+["all","open","full","done","cancelled","expired"].map(k=>`<button data-f="${k}" class="${flt==k?"on":""}">${k}</button>`).join("")+'</div>';
+  const L=shifts.filter(s=>flt=="all"||stat(s)==flt);
+  h+=L.length?L.map(s=>`<div class="card ${stat(s)}"><b>${esc(s.venue)}</b>${s.startNow?'<span class="tag">NEEDED NOW</span>':""}<span class="tag">${esc(s.trade||"waiter")}</span><span class="tag">${NAMES[stat(s)]||esc(stat(s))}${s.needed?" "+slotsOf(s).length+"/"+s.needed:""}</span><br>${esc(fmtDate(s.date))}, ${esc(fmtT(s.time))} \u00b7 ${s.hours} hrs \u00b7 ${inr(s.rate)}/hr = <b>${inr(s.rate*s.hours)}</b>${okMap(s.map)?`<br><a href="${esc(s.map)}" target="_blank" rel="noopener">Map</a>`:s.address?"<br>Address: "+esc(s.address):""}<br>Business: ${esc(s.ownerName||"-")}${slotsOf(s).length?"<br>Waiters: "+slotsOf(s).map(w=>esc(w.name)+" ("+esc(w.status)+", "+esc(w.pay||"cash")+(w.paid?", paid":"")+(w.received?", received":"")+")").join(", "):""}
+  <div class="a">${stat(s)!="cancelled"&&stat(s)!="done"?`<button class="r" data-c="${s.id}">Cancel</button>`:""}${(s.status=="cancelled"||slotsOf(s).length)&&stat(s)!="done"?`<button data-o="${s.id}">Reset</button>`:""}<button data-d="${s.id}">Delete</button></div></div>`).join(""):'<div class="empty">Nothing here.</div>'}
+ else if(tab=="leads")h+=leadsPanel();
+ else h+=dataPanel();
+ $("main").innerHTML=h}
+
+function stop(){unsubs.forEach(f=>f());unsubs=[];users=[];shifts=[];RAT=[];clearTimeout(syncTimer)}
+onAuthStateChanged(auth,u=>{stop();err="";
+ if(u&&(u.email||"").toLowerCase()===ADMIN){
+  unsubs.push(onSnapshot(query(collection(db,"leads"),orderBy("created","desc")),s=>{LEADS=s.docs.map(d=>({id:d.id,...d.data({serverTimestamps:"estimate"})}));draw()},e=>{err="Leads: "+e.message;draw()}));
+  unsubs.push(onSnapshot(collection(db,"users"),s=>{users=s.docs.map(d=>({id:d.id,...d.data({serverTimestamps:"estimate"})}));draw();queueSync()},e=>{err="Users: "+e.message;draw()}));
+  unsubs.push(onSnapshot(collection(db,"ratings"),s=>{RAT=s.docs.map(d=>d.data({serverTimestamps:"estimate"}));AV={};s.docs.forEach(d=>{const r=d.data(),z=AV[r.to]||(AV[r.to]={s:0,n:0});z.s+=r.stars;z.n++});draw();queueSync()},e=>{err="Ratings: "+e.message;draw()}));
+  unsubs.push(onSnapshot(query(collection(db,"shifts"),orderBy("created","desc")),s=>{shifts=s.docs.map(d=>({id:d.id,...d.data({serverTimestamps:"estimate"})}));draw();queueSync()},e=>{err="Shifts: "+e.message;draw()}))}
+ draw()});
+
+document.addEventListener("click",async e=>{const t=e.target;if(t.tagName!=="BUTTON")return;
+ try{
+ if(t.id=="login"){const p=new GoogleAuthProvider();try{await signInWithPopup(auth,p)}catch(x){if(x.code=="auth/popup-blocked")await signInWithRedirect(auth,p);else if(x.code!="auth/popup-closed-by-user")throw x}}
+ else if(t.id=="out")await signOut(auth);
+ else if(t.dataset.t){tab=t.dataset.t;draw()}
+ else if(t.dataset.f){flt=t.dataset.f;draw()}
+ else if(t.dataset.dl){if(confirm("Delete this sign-up?"))await deleteDoc(doc(db,"leads",t.dataset.dl))}
+ else if(t.dataset.csv){download(t.dataset.csv,dataSets(false)[t.dataset.csv])}
+ else if(t.dataset.sync){if($("su")){lss("kg_sheet_url",$("su").value.trim());lss("kg_sheet_tok",$("st").value.trim())}syncMsg="Sending...";const m=$("sm");if(m)m.textContent=syncMsg;await syncSheet()}
+ else if(t.dataset.ap)await updateDoc(doc(db,"users",t.dataset.ap),{status:"approved"});
+ else if(t.dataset.bl){if(confirm("Block this user?"))await updateDoc(doc(db,"users",t.dataset.bl),{status:"blocked"})}
+ else if(t.dataset.du){if(confirm("Delete this user profile?"))await deleteDoc(doc(db,"users",t.dataset.du))}
+ else if(t.dataset.c){if(confirm("Cancel this shift?"))await updateDoc(doc(db,"shifts",t.dataset.c),{status:"cancelled"})}
+ else if(t.dataset.o){if(confirm("Reset to an open shift? All waiters will be removed."))await updateDoc(doc(db,"shifts",t.dataset.o),{status:"open",slots:{}})}
+ else if(t.dataset.d){if(confirm("Delete permanently?")){try{await deleteDoc(doc(db,"shifts",t.dataset.d,"secret","otp"))}catch(x){}await deleteDoc(doc(db,"shifts",t.dataset.d))}}
+ }catch(x){err="Failed: "+x.message;draw()}});
+document.addEventListener("change",e=>{const t=e.target;
+ if(t.id=="su")lss("kg_sheet_url",t.value.trim());
+ if(t.id=="st")lss("kg_sheet_tok",t.value.trim());
+ if(t.id=="sa"){lss("kg_sheet_auto",t.checked?"1":"0");if(t.checked)queueSync()}});
+</script></body></html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KaamOn Business</title>
+<link rel="manifest" href="manifest-business.webmanifest">
+<meta name="theme-color" content="#231F1C">
+<link rel="icon" href="icon-business-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-business.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KaamOn Biz">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1EEE8;--card:#FFFFFF;--ink:#231F1C;--mut:#6B645D;--brick:#B8432A;--brick2:#962F1A;--onb:#FFFFFF;--turm:#E9A820;--line:#E2DDD3;--ok:#2F7A4B;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#171412;--card:#221D1A;--ink:#F3EDE3;--mut:#A59B8F;--brick:#E2694B;--brick2:#C9553A;--onb:#1B0F0B;--turm:#EDB43D;--line:#3A322C;--ok:#5FB07A}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-text-size-adjust:100%}
+a{color:var(--brick)}
+:focus-visible{outline:3px solid var(--turm);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.w{max-width:480px;margin:0 auto;padding:18px 16px 40px}
+.top{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:24px;font-weight:600;letter-spacing:-.02em;margin:0;display:flex;align-items:baseline;gap:2px}
+h1 span{color:var(--turm)}
+h1 small{font-size:12px;font-weight:500;color:var(--mut);letter-spacing:0;margin-left:8px;padding:1px 9px;border:1px solid var(--line);border-radius:99px}
+.sub{color:var(--mut);font-size:13px;margin:2px 0 14px}
+h2{font-size:15px;font-weight:600;color:var(--mut);margin:24px 2px 4px}
+.link{background:none;border:0;color:var(--mut);font:inherit;font-size:13px;text-decoration:underline;padding:8px 0;cursor:pointer}
+.tl{font-size:16px;font-weight:600;color:var(--brick);margin:12px 2px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;margin:12px 0}
+.card.cancelled{opacity:.6}
+.venue{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.tk{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.meta{color:var(--mut);font-size:13px;margin-top:2px}
+.amt{font:600 22px/1.1 var(--mono);text-align:right;white-space:nowrap}
+.amt small{display:block;font:400 11px var(--sans);color:var(--mut);margin-top:3px}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid var(--line);margin:8px 6px 0 0;background:var(--bg)}
+.t-open{background:var(--turm);border-color:transparent;color:#231F1C}
+.t-full{background:var(--ink);border-color:transparent;color:var(--bg)}
+.t-done{background:var(--ok);border-color:transparent;color:#fff}
+.t-cancelled{background:var(--line);color:var(--mut)}
+.ex{font-size:13px;margin-top:6px}
+.ex a{font-weight:500}
+.perf{position:relative;height:0;border:0;border-top:2px dashed var(--line);margin:14px -16px 12px;overflow:visible}
+.perf::before,.perf::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
+.perf::before{left:-10px}.perf::after{right:-10px}
+.perf+br{display:none}
+label{display:block;font-size:13px;color:var(--mut);font-weight:500;margin:12px 0 4px}
+input,select{width:100%;height:46px;padding:0 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:16px}
+input:focus,select:focus{outline:none;border-color:var(--brick)}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.btn{width:100%;height:48px;margin-top:14px;border:0;border-radius:12px;background:var(--brick);color:var(--onb);font:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s,transform .08s}
+.btn:active{background:var(--brick2);transform:scale(.99)}
+.btn.alt{background:var(--ink);color:var(--bg)}
+.btn.sm{width:auto;height:34px;padding:0 12px;margin:8px 6px 0 0;font-size:13px;border-radius:9px}
+.pick{display:flex;gap:8px;margin-top:6px}
+.pick button{flex:1;height:44px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.pick button.on{background:var(--brick);border-color:var(--brick);color:var(--onb)}
+.otp{font:600 30px/1 var(--mono);letter-spacing:.3em;color:var(--brick);text-align:center;padding:14px 0 14px .3em;margin:8px 0;border:2px dashed var(--line);border-radius:12px}
+.avg{font-size:12px;font-weight:600;color:var(--mut)}
+.rate{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;color:var(--mut)}
+.stars button{background:none;border:0;font-size:30px;line-height:1;color:var(--turm);padding:6px 3px;cursor:pointer}
+.rated{margin-top:8px;font-size:13px;color:var(--mut)}
+.inst{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px;margin:4px 0 10px;font-size:13px}
+.inst .btn{margin:0;flex:none}
+.empty{color:var(--mut);text-align:center;padding:20px 0;font-size:14px}
+.err{color:var(--brick);font-size:13px;margin-top:6px}
+.clockbox{margin:10px 0;padding:12px;border:2px dashed var(--line);border-radius:12px;text-align:center;color:var(--mut);font-size:13px}
+.clock{font:600 34px/1.1 var(--mono);color:var(--ok);letter-spacing:.04em;margin-top:2px}
+.clk{font:600 13px var(--mono);color:var(--ok)}
+.clock-row{font-size:13px;color:var(--mut);margin:2px 0 4px}
+.mut{color:var(--mut)}
+.t-expired{background:var(--line);color:var(--mut)}
+input[id^=rc_]{height:40px;margin-top:8px;font-size:14px}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-height:46px}
+.ck{display:flex;gap:10px;align-items:center;margin-top:14px;font-size:14px;font-weight:500;color:var(--ink)}
+.ck input{width:20px;height:20px;flex:none;accent-color:var(--brick)}
+.t-now{background:var(--brick);border-color:transparent;color:var(--onb)}
+input:disabled,select:disabled{opacity:.45}
+.lnkbtn{display:block;text-align:center;line-height:48px;border-radius:12px;background:var(--brick);color:var(--onb);font-weight:600;text-decoration:none;margin-top:14px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="w">
+<div class="top"><h1>KaamOn<span>.</span><small>Business</small></h1><span id="who"></span></div>
+<div class="sub">Hire waiters and helpers in Koramangala, Bengaluru</div>
+<div id="inst"></div>
+<div id="app"><div class="empty">Loading…</div></div>
+</div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,setDoc,getDoc,updateDoc,onSnapshot,query,where,orderBy,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyA5_H4XPxVfszSqjIIt_Z6ts60g0iY2yVM",authDomain:"kaamon-web.firebaseapp.com",projectId:"kaamon-web",storageBucket:"kaamon-web.firebasestorage.app",messagingSenderId:"545693200472",appId:"1:545693200472:web:a3bdeae4059c57e6fb9a2d"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr=n=>"₹"+Number(n).toLocaleString("en-IN");
+const NAMES={open:"OPEN",full:"FULL",done:"COMPLETED",cancelled:"CANCELLED",expired:"EXPIRED"};
+const TRADE={waiter:"Waiter",helper:"General helper"};
+const W={accepted:"ACCEPTED",started:"IN PROGRESS",done:"COMPLETED"};
+const okMap=u=>/^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps|www\.google\.com\/maps|google\.com\/maps|maps\.google\.com)(\/|\?|$)/.test(u||"");
+const fmtDate=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||"")?new Date(d+"T00:00").toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"}):(d||"");
+const fmtT=t=>/^\d{2}:\d{2}$/.test(t||"")?new Date("2000-01-01T"+t).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",hour12:true}).toUpperCase():(t||"");
+const fmtMs=ms=>new Date(ms).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",hour12:true}).toUpperCase();
+const stamp=v=>{const ms=tsMs(v);return ms?new Date(ms).toLocaleDateString("en-IN",{day:"numeric",month:"short"})+", "+fmtMs(ms):""};
+const tsMs=v=>v&&v.toMillis?v.toMillis():null;
+const pad=n=>String(n).padStart(2,"0");
+const fmtClock=ms=>{ms=Math.max(0,Math.floor(ms/1000));return pad(Math.floor(ms/3600))+":"+pad(Math.floor(ms%3600/60))+":"+pad(ms%60)};
+const fmtDur=ms=>{const m=Math.max(0,Math.round(ms/60000));return Math.floor(m/60)+"h "+pad(m%60)+"m"};
+const todayISO=()=>{const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+function tm12(){const h=$("th").value,m=$("tmn").value,ap=$("tap").value;if(!h||!m)return "";return pad((+h%12)+(ap=="PM"?12:0))+":"+m}
+function whenText(s){let t=fmtDate(s.date)+", "+fmtT(s.time);if(s.startAt){const e=s.startAt+s.hours*3600000;t+=" to "+fmtMs(e)+(new Date(e).toDateString()!=new Date(s.startAt).toDateString()?" (next day)":"")}return t}
+function timeLine(w){const st=tsMs(w.startedAt),en=tsMs(w.endedAt);
+ if(w.status=="started"&&st)return `<div class="clock-row">Started ${fmtMs(st)}, working <span class="clk" data-clock="${st}">00:00:00</span></div>`;
+ if(w.status=="done"&&st&&en)return `<div class="clock-row">${fmtMs(st)} to ${fmtMs(en)}, worked ${fmtDur(en-st)}</div>`;
+ return ""}
+function tick(){document.querySelectorAll("[data-clock]").forEach(el=>{el.textContent=fmtClock(Date.now()-(+el.dataset.clock))})}
+setInterval(tick,1000);
+const slotsOf=s=>Object.entries(s.slots||{}).map(([uid,v])=>({uid,...v}));
+function upiLink(s,w){return "upi://pay?pa="+encodeURIComponent(w.upi||"")+"&pn="+encodeURIComponent(w.name)+"&am="+(s.rate*s.hours).toFixed(2)+"&cu=INR&tn="+encodeURIComponent("KaamOn shift")}
+function avgText(uid){const a=AV[uid];return a?`<span class="avg">★ ${(a.s/a.n).toFixed(1)} (${a.n})</span>`:`<span class="avg">New</span>`}
+function rateLine(s,to){const mine=ratings.find(x=>x.shift==s.id&&x.by==user.uid&&x.to==to),theirs=ratings.find(x=>x.shift==s.id&&x.to==user.uid&&x.by==to);
+ let h="";
+ if(theirs)h+=`<div class="rated">They rated you ${"★".repeat(theirs.stars)}${theirs.comment?`: "${esc(theirs.comment)}"`:""}</div>`;
+ if(mine)return h+`<div class="rated">You rated ${"★".repeat(mine.stars)}${mine.comment?`: "${esc(mine.comment)}"`:""}</div>`;
+ return h+`<input id="rc_${s.id}_${to}" maxlength="200" placeholder="Add a comment (optional)"><div class="rate"><span>Rate this ${prof.role=="business"?"worker":"business"}</span><div class="stars">${[1,2,3,4,5].map(n=>`<button data-rate="${s.id}|${to}|${n}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}</div></div>`}
+function payBlock(s,w){
+ const k=s.id+"|"+w.uid,amt=inr(s.rate*s.hours),upi=(w.pay=="upi"&&w.upi);
+ let h=` <span class="tag">${upi?"UPI":"CASH"}</span>`;
+ if(w.status!="done")return h;
+ if(w.paid)return h+(w.received?" <b>Paid · receipt confirmed</b>":" <b>Paid</b> · waiting for worker to confirm");
+ h+=upi?`<div>Pay ${amt} to ${esc(w.upi)}</div><button class="btn sm alt" data-qr="${k}">${qrOpen[k]?"Hide":"Show"} QR</button> <a href="${esc(upiLink(s,w))}">Open UPI app</a>`+(qrOpen[k]?`<div data-upi="${esc(upiLink(s,w))}" style="background:#fff;padding:8px;display:inline-block;margin:6px 0"></div>`:"")
+  :`<div>Pay ${amt} in cash.</div>`;
+ return h+` <button class="btn sm" data-paid="${k}">Mark paid</button>`}
+function upiSaved(){try{return localStorage.getItem("kg_upi")||""}catch(e){return ""}}
+const find=id=>shifts.filter(x=>x.id==id)[0];
+function stat(s){if(s.status=="cancelled")return "cancelled";const L=slotsOf(s);if(L.length&&L.filter(w=>w.status=="done").length>=s.needed)return "done";if(L.length>=s.needed)return "full";if(s.startAt&&Date.now()>s.startAt+s.hours*3600000)return "expired";return "open"}
+
+const APP="business";
+let user=null,prof=undefined,shifts=[],otps={},contacts={},qrOpen={},ratings=[],AV={},unRat=null,unProf=null,unShifts=null,pickRole=APP=="business"?"business":"waiter",msg="";
+
+function extra(s){return (okMap(s.map)?`<div class="ex"><a href="${esc(s.map)}" target="_blank" rel="noopener">Open location in Google Maps</a></div>`:s.address?`<div class="ex">Address: ${esc(s.address)}</div>`:"")+(s.dress?`<div class="ex">Dress code: ${esc(s.dress)}</div>`:"")+(s.notes?`<div class="ex">Note: ${esc(s.notes)}</div>`:"")}
+function head(s){return `<div class="tk"><div><b class="venue">${esc(s.venue)}</b><div class="meta">${TRADE[s.trade||"waiter"]} needed ${esc(whenText(s))} for ${s.hours} hrs at ${inr(s.rate)}/hr</div></div><div class="amt">${inr(s.rate*s.hours)}<small>per worker</small></div></div><span class="tag t-${stat(s)}">${NAMES[stat(s)]} ${slotsOf(s).length}/${s.needed}</span>${s.startNow?'<span class="tag t-now">NEEDED NOW</span>':""}${extra(s)}${s.created&&stamp(s.created)?`<div class="ex mut">Posted ${stamp(s.created)}</div>`:""}<hr class="perf">`}
+
+function viewLogin(){return `<div class="card"><b class="venue">Welcome to KaamOn</b><p>Sign in with Google to post and manage shifts.</p><button class="btn" id="login">Sign in with Google</button><div class="err" id="m">${esc(msg)}</div></div>`}
+
+function viewRegister(){return `<div class="card"><b>Create your profile</b>
+${APP=="business"?"":`<label>I am a</label><div class="pick"><button data-pick="waiter" class="${pickRole=="waiter"?"on":""}">Waiter</button><button data-pick="helper" class="${pickRole=="helper"?"on":""}">General helper</button></div>`}
+<label>${pickRole=="business"?"Business / venue name":"Your full name"}</label><input id="nm" value="">
+<label>Mobile number (10 digits)</label><input id="ph" inputmode="numeric" maxlength="10">
+<button class="btn" id="reg">Submit for approval</button><div class="err" id="m">${esc(msg)}</div></div>`}
+
+function viewPending(){return `<div class="card"><b>Waiting for approval</b><p>Thanks, ${esc(prof.name)}. We will call or WhatsApp ${esc(prof.phone)} to verify you. Once approved, reopen this page.</p></div>`}
+function viewWrong(){return `<div class="card"><b class="venue">Wrong app</b><p>This account is registered as ${prof.role=="business"?"a business":"a worker or helper"}. Please use the ${prof.role=="business"?"KaamOn Business":"KaamOn Work"} app instead.</p><a class="lnkbtn" href="${prof.role=="business"?"business.html":"worker.html"}">Open ${prof.role=="business"?"KaamOn Business":"KaamOn Work"}</a></div>`}
+function viewBlocked(){return `<div class="card"><b>Account not active</b><p>Please contact the KaamOn team.</p></div>`}
+
+function viewB(){
+ let h=`<div class="tl">Insta help on one tap.</div><div class="card"><b class="venue">Post a shift</b><label>Venue</label><input id="v" placeholder="e.g. Third Wave Coffee, 5th Block">
+ <label class="ck"><input type="checkbox" id="now"> Needed now (starts right away)</label>
+ <label>Date</label><input id="d" type="date" min="${todayISO()}">
+ <label>Start time</label><div class="row"><select id="th"><option value="">Hour</option>${[1,2,3,4,5,6,7,8,9,10,11,12].map(n=>`<option>${n}</option>`).join("")}</select><select id="tmn"><option value="">Min</option>${["00","05","10","15","20","25","30","35","40","45","50","55"].map(n=>`<option>${n}</option>`).join("")}</select><select id="tap"><option>AM</option><option>PM</option></select></div>
+ <label>Worker needed</label><select id="tr"><option value="waiter">Waiter</option><option value="helper">General helper</option></select>
+ <div class="row"><div><label>Hours</label><input id="h" type="number" value="5"></div><div><label>₹/hr</label><input id="r" type="number" value="200"></div><div><label>Workers</label><input id="nd" type="number" min="1" max="20" value="1"></div></div>
+ <label>Location (Google Maps)</label><input id="ml" placeholder="Paste Google Maps link"><button class="btn sm alt" id="loc" style="margin-top:6px">Use my current location</button><div class="sub">Or in Google Maps: open the place, tap Share, copy the link.</div>
+ <label>Dress code</label><input id="dc" placeholder="e.g. black shirt, black pants">
+ <label>Notes for waiter</label><input id="nt" placeholder="e.g. Report to manager Suresh">
+ <label>Contact number for this shift</label><input id="cp" inputmode="numeric" maxlength="10" value="${esc(prof.phone)}">
+ <button class="btn" id="post">Post shift</button><div class="err" id="m">${esc(msg)}</div></div><h2>Your shifts</h2>`;
+ if(!shifts.length)h+='<div class="empty">No shifts yet.</div>';
+ shifts.forEach(s=>{h+=`<div class="card ${stat(s)}">${head(s)}`;
+  h+=`<br>Total for ${s.needed}: <b>${inr(s.rate*s.hours*s.needed)}</b>`;
+  const L=slotsOf(s);
+  L.forEach(w=>{h+=`<br>${esc(w.name)} ${avgText(w.uid)} <span class="tag">${W[w.status]||""}</span>`+timeLine(w)+payBlock(s,w)+(w.status=="done"?rateLine(s,w.uid):"")+(w.status=="started"?` <button class="btn sm alt" data-end="${s.id}|${w.uid}">Confirm finished</button>`:"")});
+  if(L.some(w=>w.status=="accepted"))h+=`<div>Share this OTP with waiters on arrival:</div><div class="otp">${esc(otps[s.id]||"…")}</div>`;
+  h+="</div>"});return h}
+
+function viewW(){
+ const open=shifts.filter(s=>stat(s)=="open"&&(s.trade||"waiter")==prof.role&&!(s.slots||{})[user.uid]).sort((a,b)=>(a.startAt||9e15)-(b.startAt||9e15)),mine=shifts.filter(s=>(s.slots||{})[user.uid]);
+ let h="<h2>Open shifts nearby</h2>";
+ if(!open.length)h+='<div class="empty">No open shifts right now.</div>';
+ open.forEach(s=>h+=`<div class="card">${head(s)}<br>By ${esc(s.ownerName||"")} ${avgText(s.owner)} · ${s.needed-slotsOf(s).length} spot(s) left<label>How do you want to be paid?</label><select id="pm${s.id}"><option value="cash">Cash</option><option value="upi">Online payment (QR / UPI)</option></select><label>Your UPI ID (for online payment)</label><input id="up${s.id}" placeholder="name@bank" value="${esc(upiSaved())}"><button class="btn" data-acc="${s.id}">Accept shift</button></div>`);
+ h+="<h2>My shifts</h2>";
+ if(!mine.length)h+='<div class="empty">Nothing accepted yet.</div>';
+ mine.forEach(s=>{const my=s.slots[user.uid];h+=`<div class="card ${my.status=="done"?"done":""}">${head(s)}${contacts[s.id]?`<br>Contact: <a href="tel:${esc(contacts[s.id])}">${esc(contacts[s.id])}</a>`:""}`;
+  h+=`<br>Payment: ${my.pay=="upi"?"Online (UPI) · "+esc(my.upi||""):"Cash"}${my.received?" · <b>Receipt confirmed</b>":my.paid?" · <b>Marked paid by business</b>":""}`;
+  if(my.paid&&!my.received)h+=`<br><button class="btn" data-recv="${s.id}">Confirm payment received</button>`;
+  if(my.status=="done")h+=rateLine(s,s.owner);
+  if(s.status=="cancelled")h+="<br><b>This shift was cancelled.</b>";
+  else if(my.status=="accepted")h+=`<label>Enter OTP from the business</label><input id="o${s.id}" inputmode="numeric" maxlength="4"><button class="btn" data-go="${s.id}">Start shift</button><div class="err" id="e${s.id}"></div>`;
+  else if(my.status=="started")h+=`<div class="clockbox"><small>Time worked</small><div class="clock" data-clock="${tsMs(my.startedAt)||Date.now()}">00:00:00</div></div>`;
+  else if(my.status=="done")h+=`<div>Job ticket #${s.id.slice(0,5).toUpperCase()} · You earn <b>${inr(s.rate*s.hours)}</b></div>`+timeLine(my);
+  h+="</div>"});
+ return h+`<div class="err">${esc(msg)}</div>`}
+
+function draw(){
+ if(document.activeElement&&(document.activeElement.tagName=="INPUT"||document.activeElement.tagName=="SELECT"))return;
+ $("who").innerHTML=user?`<button class="link" id="out">Sign out</button>`:"";
+ let h;
+ if(!user)h=viewLogin();
+ else if(prof===undefined)h='<div class="empty">Loading…</div>';
+ else if(prof===null)h=viewRegister();
+ else if((APP=="business")!=(prof.role=="business"))h=viewWrong();
+ else if(prof.status=="pending")h=viewPending();
+ else if(prof.status!="approved")h=viewBlocked();
+ else h=prof.role=="business"?viewB():viewW();
+ $("app").innerHTML=h;
+ document.querySelectorAll("[data-upi]").forEach(el=>{el.innerHTML="";if(typeof QRCode!="undefined")new QRCode(el,{text:el.dataset.upi,width:180,height:180})});tick()}
+
+function stop(){if(unProf)unProf();if(unShifts)unShifts();if(unRat)unRat();unProf=unShifts=unRat=null;shifts=[];ratings=[];AV={};otps={};contacts={};qrOpen={}}
+function subShifts(){
+ if(unShifts)return;
+ unRat=onSnapshot(collection(db,"ratings"),sn=>{ratings=sn.docs.map(d=>d.data());AV={};ratings.forEach(r=>{const a=AV[r.to]||(AV[r.to]={s:0,n:0});a.s+=r.stars;a.n++});draw()},()=>{});
+ const q=prof.role=="business"?query(collection(db,"shifts"),where("owner","==",user.uid)):query(collection(db,"shifts"),orderBy("created","desc"));
+ unShifts=onSnapshot(q,snap=>{
+  shifts=snap.docs.map(d=>({id:d.id,...d.data({serverTimestamps:"estimate"})})).filter(s=>s.needed);
+  if(prof.role=="business"){
+   shifts.sort((a,b)=>(b.created?b.created.seconds:9e12)-(a.created?a.created.seconds:9e12));
+   shifts.filter(s=>slotsOf(s).some(w=>w.status=="accepted")&&!otps[s.id]).forEach(async s=>{
+    try{const o=await getDoc(doc(db,"shifts",s.id,"secret","otp"));if(o.exists()){otps[s.id]=o.data().code;draw()}}catch(e){}})}
+  if(prof.role!="business"){
+   shifts.filter(s=>s.slots&&s.slots[user.uid]&&(s.slots[user.uid].status=="accepted"||s.slots[user.uid].status=="started")&&!contacts[s.id]).forEach(async s=>{
+    try{const o=await getDoc(doc(db,"shifts",s.id,"secret","contact"));if(o.exists()){contacts[s.id]=o.data().phone;draw()}}catch(e){}})}
+  draw()},err=>{msg="Could not load shifts: "+err.message;draw()})}
+
+onAuthStateChanged(auth,u=>{
+ stop();user=u;prof=undefined;
+ if(!u){draw();return}
+ unProf=onSnapshot(doc(db,"users",u.uid),s=>{prof=s.exists()?s.data():null;if(prof&&prof.status=="approved")subShifts();draw()},
+  err=>{$("app").innerHTML='<div class="empty err">Error: '+esc(err.message)+'</div>'});
+ draw()});
+
+document.addEventListener("click",async e=>{
+ const t=e.target;if(t.tagName!=="BUTTON")return;
+ if(t.id=="loc"){const m=$("m");
+  if(!navigator.geolocation){m.textContent="Location not available. Paste a Maps link instead.";return}
+  m.textContent="Getting location...";
+  navigator.geolocation.getCurrentPosition(p=>{$("ml").value="https://www.google.com/maps?q="+p.coords.latitude.toFixed(6)+","+p.coords.longitude.toFixed(6);m.textContent="Location added."},()=>{m.textContent="Could not get location. Allow location access, or paste a Maps link."},{enableHighAccuracy:true,timeout:15000});
+  return}
+ if(t.id=="instbtn"){if(deferred){deferred.prompt();try{await deferred.userChoice}catch(x){}deferred=null;showInstall()}return}
+ msg="";
+ try{
+ if(t.id=="login"){const p=new GoogleAuthProvider();
+  try{await signInWithPopup(auth,p)}catch(err){if(err.code=="auth/popup-blocked"||err.code=="auth/operation-not-supported-in-this-environment")await signInWithRedirect(auth,p);else if(err.code!="auth/popup-closed-by-user"&&err.code!="auth/cancelled-popup-request")throw err}}
+ else if(t.id=="out"){await signOut(auth)}
+ else if(t.dataset.pick){pickRole=t.dataset.pick;const n=$("nm").value,p=$("ph").value;document.activeElement.blur();draw();$("nm").value=n;$("ph").value=p;return}
+ else if(t.id=="reg"){const nm=$("nm").value.trim(),ph=$("ph").value.trim();
+  if(nm.length<2||!/^[6-9]\d{9}$/.test(ph)){msg="Enter a valid name and 10-digit mobile number.";$("m").textContent=msg;return}
+  await setDoc(doc(db,"users",user.uid),{name:nm,phone:ph,role:pickRole,status:"pending",email:user.email||"",created:serverTimestamp()})}
+ else if(t.id=="post"){const v=$("v").value.trim(),nw=$("now").checked,d=nw?todayISO():$("d").value.trim(),tm=nw?(pad(new Date().getHours())+":"+pad(new Date().getMinutes())):tm12(),hr=+$("h").value,rt=+$("r").value,nd=Math.floor(+$("nd").value),tr=$("tr").value,ml=$("ml").value.trim(),dc=$("dc").value.trim(),nt=$("nt").value.trim(),cp=$("cp").value.trim();
+  if(!v||!d||!tm||!(hr>0)||!(rt>0)){$("m").textContent="Please fill venue, date, start time, hours and rate.";return}
+  const startAt=nw?Date.now():new Date(d+"T"+tm).getTime();
+  if(!nw&&!(startAt>Date.now())){$("m").textContent="Choose a date and start time in the future.";return}
+  if(!okMap(ml)){$("m").textContent="Add a Google Maps location: paste a Maps link or tap Use my current location.";return}
+  if(!(nd>=1&&nd<=20)){$("m").textContent="Workers needed must be between 1 and 20.";return}
+  if(!/^[6-9]\d{9}$/.test(cp)){$("m").textContent="Enter a valid 10-digit contact number.";return}
+  const ref=doc(collection(db,"shifts")),b=writeBatch(db);
+  b.set(ref,{venue:v,date:d,time:tm,startAt:startAt,startNow:nw,hours:hr,rate:rt,map:ml,dress:dc,notes:nt,trade:tr,needed:nd,slots:{},status:"open",owner:user.uid,ownerName:prof.name,created:serverTimestamp()});
+  b.set(doc(db,"shifts",ref.id,"secret","otp"),{code:String(1000+Math.floor(Math.random()*9000))});
+  b.set(doc(db,"shifts",ref.id,"secret","contact"),{phone:cp});
+  await b.commit()}
+ else if(t.dataset.acc){const id=t.dataset.acc,pm=$("pm"+id).value,up=$("up"+id).value.trim();
+  if(pm=="upi"&&!/^[\w.\-]{2,}@[A-Za-z]{2,}$/.test(up)){msg="Enter a valid UPI ID like name@bank, or choose Cash.";draw();return}
+  if(pm=="upi"){try{localStorage.setItem("kg_upi",up)}catch(e){}}
+  const slot={name:prof.name,status:"accepted",pay:pm};if(pm=="upi")slot.upi=up;
+  try{await updateDoc(doc(db,"shifts",id),{["slots."+user.uid]:slot})}catch(err){msg="Could not accept. The shift may just have been filled.";draw();return}}
+ else if(t.dataset.go){const id=t.dataset.go,v=$("o"+id).value.trim();
+  try{await updateDoc(doc(db,"shifts",id),{["slots."+user.uid+".status"]:"started",["slots."+user.uid+".otpTry"]:v,["slots."+user.uid+".startedAt"]:serverTimestamp()})}catch(err){$("e"+id).textContent="Wrong OTP. Ask the business again.";return}}
+ else if(t.dataset.paid){const p=t.dataset.paid.split("|");await updateDoc(doc(db,"shifts",p[0]),{["slots."+p[1]+".paid"]:true})}
+ else if(t.dataset.recv){const sh=find(t.dataset.recv);if(!confirm("Confirm that you received "+inr(sh.rate*sh.hours)+"?"))return;await updateDoc(doc(db,"shifts",t.dataset.recv),{["slots."+user.uid+".received"]:true})}
+ else if(t.dataset.rate){const p=t.dataset.rate.split("|");if(!confirm("Give "+p[2]+" star"+(p[2]=="1"?"":"s")+"? You cannot change it later."))return;
+  const cm=($("rc_"+p[0]+"_"+p[1])||{value:""}).value.trim().slice(0,200);
+  await setDoc(doc(db,"ratings",p[0]+"_"+user.uid+"_"+p[1]),{shift:p[0],by:user.uid,to:p[1],stars:+p[2],comment:cm,created:serverTimestamp()})}
+ else if(t.dataset.qr){qrOpen[t.dataset.qr]=!qrOpen[t.dataset.qr]}
+ else if(t.dataset.end){const p=t.dataset.end.split("|");await updateDoc(doc(db,"shifts",p[0]),{["slots."+p[1]+".status"]:"done",["slots."+p[1]+".endedAt"]:serverTimestamp()})}
+ else return;
+ }catch(err){msg="Could not save: "+err.message;const m=$("m");if(m)m.textContent=msg}
+ document.activeElement.blur();draw()});
+let deferred=null;
+const standalone=()=>window.matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+function showInstall(){const el=$("inst");if(!el)return;
+ if(standalone()){el.innerHTML="";return}
+ if(/SamsungBrowser/i.test(navigator.userAgent)){el.innerHTML='<div class="inst"><span>To install this app, open this page in Chrome.</span></div>';return}
+ if(deferred)el.innerHTML='<div class="inst"><span>Install KaamOn Business on your phone</span><button class="btn sm" id="instbtn">Install</button></div>';
+ else if(/iphone|ipad|ipod/i.test(navigator.userAgent))el.innerHTML='<div class="inst"><span>To install: tap Share, then Add to Home Screen</span></div>';
+ else el.innerHTML=""}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;showInstall()});
+window.addEventListener("appinstalled",()=>{deferred=null;showInstall()});
+showInstall();
+if("serviceWorker" in navigator)window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})});
+document.addEventListener("change",e=>{if(e.target.id=="now"){["d","th","tmn","tap"].forEach(i=>{const el=$(i);if(el){el.disabled=e.target.checked;if(e.target.checked&&i=="d")el.value=""}})}});
+</script>
+</body>
+</html>

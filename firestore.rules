@@ -1,0 +1,143 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'kaamontech@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function isApproved() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && profile().status == 'approved';
+    }
+    function isRole(r) {
+      return isApproved() && profile().role == r;
+    }
+    function isWorker() {
+      return isApproved() && profile().role in ['waiter', 'helper'];
+    }
+
+    match /leads/{leadId} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'who', 'area', 'created'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('^[6-9][0-9]{9}$')
+        && request.resource.data.who in ['business', 'waiter', 'helper', 'curious']
+        && request.resource.data.area is string
+        && request.resource.data.area.size() <= 60
+        && request.resource.data.created == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.role in ['business', 'waiter', 'helper']
+        && request.resource.data.keys().hasOnly(['name', 'phone', 'role', 'status', 'email', 'created']);
+      allow update, delete: if isAdmin();
+    }
+
+    function shiftDoc(id) {
+      return get(/databases/$(database)/documents/shifts/$(id)).data;
+    }
+
+    match /ratings/{rid} {
+      allow read: if isApproved() || isAdmin();
+      allow create: if isApproved()
+        && request.resource.data.keys().hasOnly(['shift', 'by', 'to', 'stars', 'comment', 'created'])
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() <= 300
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.stars is int
+        && request.resource.data.stars >= 1
+        && request.resource.data.stars <= 5
+        && request.resource.data.created == request.time
+        && rid == request.resource.data.shift + '_' + request.auth.uid + '_' + request.resource.data.to
+        && (
+          // the business rates a worker who finished
+          (isRole('business')
+            && shiftDoc(request.resource.data.shift).owner == request.auth.uid
+            && shiftDoc(request.resource.data.shift).slots[request.resource.data.to].status == 'done')
+          // a worker who finished rates the business
+          || (isWorker()
+            && shiftDoc(request.resource.data.shift).slots[request.auth.uid].status == 'done'
+            && shiftDoc(request.resource.data.shift).owner == request.resource.data.to)
+        );
+      allow delete: if isAdmin();
+    }
+
+    match /shifts/{shiftId} {
+      allow read: if isApproved() || isAdmin();
+
+      allow create: if isRole('business')
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.trade in ['waiter', 'helper']
+        && request.resource.data.needed is int
+        && request.resource.data.needed >= 1
+        && request.resource.data.needed <= 20
+        && request.resource.data.slots.size() == 0;
+
+      allow update: if isAdmin()
+        // a waiter takes a free place
+        || (isWorker()
+            && resource.data.get('trade', 'waiter') == profile().role
+            && resource.data.status == 'open'
+            && !(request.auth.uid in resource.data.slots)
+            && resource.data.slots.size() < resource.data.needed
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['slots'])
+            && request.resource.data.slots.diff(resource.data.slots).affectedKeys().hasOnly([request.auth.uid])
+            && request.resource.data.slots.size() == resource.data.slots.size() + 1
+            && request.resource.data.slots[request.auth.uid].keys().hasOnly(['name', 'status', 'pay', 'upi'])
+            && request.resource.data.slots[request.auth.uid].pay in ['cash', 'upi']
+            && request.resource.data.slots[request.auth.uid].status == 'accepted')
+        // a waiter starts with the correct OTP
+        || (isWorker()
+            && request.auth.uid in resource.data.slots
+            && resource.data.slots[request.auth.uid].status == 'accepted'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['slots'])
+            && request.resource.data.slots.diff(resource.data.slots).affectedKeys().hasOnly([request.auth.uid])
+            && request.resource.data.slots[request.auth.uid].status == 'started'
+            && request.resource.data.slots[request.auth.uid].keys().hasOnly(['name', 'status', 'pay', 'upi', 'otpTry', 'startedAt'])
+            && request.resource.data.slots[request.auth.uid].startedAt == request.time
+            && request.resource.data.slots[request.auth.uid].name == resource.data.slots[request.auth.uid].name
+            && request.resource.data.slots[request.auth.uid].otpTry == get(/databases/$(database)/documents/shifts/$(shiftId)/secret/otp).data.code)
+        // a worker confirms that the payment was received
+        || (isWorker()
+            && request.auth.uid in resource.data.slots
+            && resource.data.slots[request.auth.uid].status == 'done'
+            && resource.data.slots[request.auth.uid].get('paid', false) == true
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['slots'])
+            && request.resource.data.slots.diff(resource.data.slots).affectedKeys().hasOnly([request.auth.uid])
+            && request.resource.data.slots[request.auth.uid].diff(resource.data.slots[request.auth.uid]).affectedKeys().hasOnly(['received'])
+            && request.resource.data.slots[request.auth.uid].received == true)
+        // the business confirms its waiters (cannot add new ones)
+        || (resource.data.owner == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['slots'])
+            && request.resource.data.slots.keys().hasOnly(resource.data.slots.keys()));
+
+      allow delete: if isAdmin();
+
+      match /secret/{docId} {
+        allow read: if isAdmin()
+          || (isRole('business')
+              && get(/databases/$(database)/documents/shifts/$(shiftId)).data.owner == request.auth.uid)
+          || (isWorker()
+              && docId == 'contact'
+              && request.auth.uid in get(/databases/$(database)/documents/shifts/$(shiftId)).data.slots);
+        allow create: if isRole('business')
+          && getAfter(/databases/$(database)/documents/shifts/$(shiftId)).data.owner == request.auth.uid;
+        allow write: if isAdmin();
+      }
+    }
+  }
+}

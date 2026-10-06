@@ -1,0 +1,32 @@
+{
+  "id": "kaamon-business",
+  "name": "KaamOn for Business",
+  "short_name": "KaamOn Biz",
+  "description": "Hire waiters and helpers. Insta help on one tap.",
+  "start_url": "business.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F1EEE8",
+  "theme_color": "#231F1C",
+  "icons": [
+    {
+      "src": "icon-business-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-business-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-business-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
