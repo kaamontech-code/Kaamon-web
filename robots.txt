@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://kaamontech-code.github.io/Kaamon-web/sitemap.xml
