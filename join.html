@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get early access: KaamOn</title>
+<meta name="description" content="Leave your details and the KaamOn team will call you about the pilot in Koramangala, Bengaluru.">
+<meta property="og:title" content="Get early access: KaamOn"><meta property="og:description" content="Leave your details and the KaamOn team will call you about the pilot in Koramangala, Bengaluru."><meta property="og:type" content="website"><meta property="og:image" content="https://kaamontech-code.github.io/Kaamon-web/og-image.png"><meta name="twitter:card" content="summary_large_image"><meta property="og:url" content="https://kaamontech-code.github.io/Kaamon-web/join.html">
+<link rel="canonical" href="https://kaamontech-code.github.io/Kaamon-web/join.html"><meta name="theme-color" content="#B8432A"><link rel="icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head><body><div class="wrap">
+<header><a class="logo" href="./">KaamOn<i>.</i></a><nav aria-label="Main"><a href="how-it-works.html">How it works</a><a href="for-businesses.html">For businesses</a><a href="for-workers.html">For workers</a><a href="faq.html">FAQ</a><a href="about.html">About</a><a href="contact.html">Contact</a><a href="join.html" aria-current="page">Join</a></nav></header>
+<main><section class="phead"><div class="eyebrow">Early access</div><h1>Be first to try KaamOn</h1><p class="lead">Leave your details and we will call you about the pilot in Koramangala.</p></section><form id="f" class="panel" style="max-width:34em;margin-top:22px" novalidate>
+<label for="n" style="margin-top:0">Your name</label><input id="n" autocomplete="name" maxlength="80">
+<label for="p">Mobile number (10 digits)</label><input id="p" inputmode="numeric" maxlength="10" autocomplete="tel">
+<label for="w">I am</label><select id="w"><option value="business">A business that needs staff</option><option value="waiter">A waiter</option><option value="helper">A general helper</option><option value="curious">Just curious</option></select>
+<label for="a">Your area</label><input id="a" value="Koramangala" maxlength="60">
+<input id="hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+<button class="btn red" id="go" type="submit" style="width:100%;margin-top:20px;border:0;cursor:pointer;font-family:inherit">Get early access</button>
+<p class="note" id="msg" role="status"></p>
+<p class="note">We use your details only to contact you about KaamOn. See our <a href="privacy.html" style="color:var(--brick)">privacy policy</a>.</p></form>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,addDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const db=getFirestore(initializeApp({apiKey:"AIzaSyA5_H4XPxVfszSqjIIt_Z6ts60g0iY2yVM",authDomain:"kaamon-web.firebaseapp.com",projectId:"kaamon-web",storageBucket:"kaamon-web.firebasestorage.app",messagingSenderId:"545693200472",appId:"1:545693200472:web:a3bdeae4059c57e6fb9a2d"}));
+const $=id=>document.getElementById(id),say=(t,c)=>{$("msg").textContent=t;$("msg").className="note "+c};
+$("f").addEventListener("submit",async e=>{e.preventDefault();
+ const name=$("n").value.trim(),phone=$("p").value.trim(),who=$("w").value,area=($("a").value.trim()||"Koramangala").slice(0,60);
+ if($("hp").value)return;
+ if(name.length<2)return say("Please enter your name.","bad");
+ if(!/^[6-9]\d{9}$/.test(phone))return say("Enter a valid 10-digit mobile number.","bad");
+ $("go").disabled=true;say("Sending...","");
+ try{await addDoc(collection(db,"leads"),{name,phone,who,area,created:serverTimestamp()});
+  $("f").innerHTML='<b style="font-size:20px">Thank you, '+name.replace(/[<>&"]/g,"")+'!</b><p class="mut" style="margin-top:8px">We will call you soon about the KaamOn pilot.</p><a class="btn dark" style="margin-top:16px" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent("KaamOn: insta help on one tap. Part-time waiters and helpers in Koramangala, Bengaluru. https://kaamontech-code.github.io/Kaamon-web/")+'">Share KaamOn on WhatsApp</a>'}
+ catch(err){$("go").disabled=false;say("Could not send right now. Please try again in a moment.","bad")}});
+</script></main>
+<footer><div class="fbrand"><b>KaamOn<span style="color:var(--turm)">.</span></b><br>Insta help on one tap.<br>Pilot in Koramangala, Bengaluru.</div>
+<div class="fgrid"><div><h4>Product</h4><a href="how-it-works.html">How it works</a><a href="for-businesses.html">For businesses</a><a href="for-workers.html">For workers</a></div>
+<div><h4>Company</h4><a href="about.html">About</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a><a href="join.html">Get early access</a><a href="https://wa.me/?text=KaamOn%3A%20insta%20help%20on%20one%20tap.%20Part-time%20waiters%20and%20helpers%20in%20Koramangala%2C%20Bengaluru.%20https%3A%2F%2Fkaamontech-code.github.io%2FKaamon-web%2F" target="_blank" rel="noopener">Share on WhatsApp</a><a href="mailto:kaamonfounder@gmail.com">kaamonfounder@gmail.com</a></div>
+<div><h4>Legal</h4><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms of use</a></div></div>
+<div class="fcopy">&copy; 2026 KaamOn. All rights reserved.</div></footer>
+</div></body></html>
