@@ -28,6 +28,7 @@ h1 span{color:var(--turm)}
 h1 small{font-size:12px;font-weight:500;color:var(--mut);letter-spacing:0;margin-left:8px;padding:1px 9px;border:1px solid var(--line);border-radius:99px}
 .sub{color:var(--mut);font-size:13px;margin:2px 0 14px}
 h2{font-size:15px;font-weight:600;color:var(--mut);margin:24px 2px 4px}
+.uid{font:600 12px var(--mono,monospace);letter-spacing:1px;background:var(--turm);color:#231F1C;padding:3px 8px;border-radius:6px;margin-right:8px}
 .link{background:none;border:0;color:var(--mut);font:inherit;font-size:13px;text-decoration:underline;padding:8px 0;cursor:pointer}
 .tl{font-size:16px;font-weight:600;color:var(--brick);margin:12px 2px 0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;margin:12px 0}
@@ -200,7 +201,7 @@ function viewW(){
 
 function draw(){
  if(document.activeElement&&(document.activeElement.tagName=="INPUT"||document.activeElement.tagName=="SELECT"))return;
- $("who").innerHTML=user?`<button class="link" id="out">Sign out</button>`:"";
+ $("who").innerHTML=user?(prof&&prof.code?`<span class="uid">ID ${esc(prof.code)}</span> `:"")+`<button class="link" id="out">Sign out</button>`:"";
  let h;
  if(!user)h=viewLogin();
  else if(prof===undefined)h='<div class="empty">Loading…</div>';

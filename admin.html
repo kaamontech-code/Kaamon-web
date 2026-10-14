@@ -35,7 +35,7 @@ input:not([type]),input[type=text]{width:100%;height:44px;padding:0 12px;border:
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,updateDoc,deleteDoc,doc,onSnapshot,query,orderBy,deleteField} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,updateDoc,deleteDoc,doc,onSnapshot,query,orderBy,deleteField,runTransaction} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const ADMIN="kaamontech@gmail.com";
 const firebaseConfig={apiKey:"AIzaSyA5_H4XPxVfszSqjIIt_Z6ts60g0iY2yVM",authDomain:"kaamon-web.firebaseapp.com",projectId:"kaamon-web",storageBucket:"kaamon-web.firebasestorage.app",messagingSenderId:"545693200472",appId:"1:545693200472:web:a3bdeae4059c57e6fb9a2d"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
@@ -62,7 +62,7 @@ function dataSets(forSheet){
  const T=v=>forSheet&&v?"'"+v:v;
  const rt=(sid,by,to)=>RAT.find(r=>r.shift==sid&&r.by==by&&r.to==to);
  const real=shifts.filter(s=>s.needed);
- const U=[["Name","Role","Status","Mobile","Email","Registered","Average rating","Ratings received"]].concat(users.map(x=>[x.name,x.role,x.status,T(x.phone),x.email,dtm(tsMs(x.created)),AV[x.id]?(AV[x.id].s/AV[x.id].n).toFixed(2):"",AV[x.id]?AV[x.id].n:0]));
+ const U=[["ID","Name","Role","Status","Mobile","Email","Registered","Average rating","Ratings received"]].concat(users.map(x=>[x.code||"",x.name,x.role,x.status,T(x.phone),x.email,dtm(tsMs(x.created)),AV[x.id]?(AV[x.id].s/AV[x.id].n).toFixed(2):"",AV[x.id]?AV[x.id].n:0]));
  const S=[["Shift ID","Business","Worker type","Venue","Date","Start","End","Hours","Rate per hour","Workers needed","Workers taken","Total value","Status","Posted","Map link","Dress code","Notes"]].concat(real.map(s=>[s.id,s.ownerName||"",s.trade||"waiter",s.venue,s.date,fmtT(s.time),s.startAt?hm(s.startAt+s.hours*3600000):"",s.hours,s.rate,s.needed,slotsOf(s).length,s.rate*s.hours*s.needed,stat(s),dtm(tsMs(s.created)),s.map||"",s.dress||"",s.notes||""]));
  const W=[["Shift ID","Business","Venue","Date","Worker","Worker type","Status","Pay method","UPI ID","Amount","Marked paid","Receipt confirmed","Started","Finished","Minutes worked","Business rating of worker","Worker rating of business"]];
  real.forEach(s=>slotsOf(s).forEach(w=>{const st=tsMs(w.startedAt),en=tsMs(w.endedAt),a1=rt(s.id,s.owner,w.uid),a2=rt(s.id,w.uid,s.owner);
@@ -98,6 +98,14 @@ function dataPanel(){
  <label class="ck"><input type="checkbox" id="sa" ${ls("kg_sheet_auto")=="1"?"checked":""}> Keep syncing while this page is open</label>
  <div class="a"><button class="g" data-sync="1">Sync now</button></div><div id="sm" class="sub" style="margin-top:8px">${esc(syncMsg)}</div></div>`}
 
+async function giveId(uid,approve){
+ await runTransaction(db,async tx=>{
+  const uref=doc(db,"users",uid),cref=doc(db,"meta","counters");
+  const us=await tx.get(uref);if(!us.exists())return;
+  const u=us.data(),patch={};if(approve)patch.status="approved";
+  if(!u.code){const cs=await tx.get(cref),c=cs.exists()?cs.data():{},k=u.role=="business"?"b":"w",n=(c[k]||0)+1;
+   tx.set(cref,Object.assign({},c,{[k]:n}));patch.code=(k=="b"?"KB-":"KW-")+String(n).padStart(4,"0")}
+  tx.update(uref,patch)})}
 function draw(){
  const u=auth.currentUser;
  if(document.activeElement&&document.activeElement.tagName=="INPUT")return;
@@ -109,7 +117,9 @@ function draw(){
  if(err)h+='<p>'+esc(err)+'</p>';
  if(tab=="users"){
   const L=users.slice().sort((a,b)=>(a.status=="pending"?0:1)-(b.status=="pending"?0:1));
-  h+=L.length?L.map(x=>`<div class="card ${x.status}"><b>${esc(x.name)}</b><span class="tag">${esc(x.role)}</span>${AV[x.id]?`<span class="tag">★ ${(AV[x.id].s/AV[x.id].n).toFixed(1)} (${AV[x.id].n})</span>`:""}<span class="tag">${esc(x.status)}</span><br>${esc(x.email)}<br><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a> · <a href="https://wa.me/91${esc(x.phone)}" target="_blank" rel="noopener">WhatsApp</a>
+  const noId=users.filter(x=>x.status=="approved"&&!x.code).length;
+  if(noId)h+=`<div class="card"><button class="g" data-ids="1">Give IDs to ${noId} approved user${noId>1?"s":""}</button></div>`;
+  h+=L.length?L.map(x=>`<div class="card ${x.status}"><b>${esc(x.name)}</b>${x.code?`<span class="tag">${esc(x.code)}</span>`:""}<span class="tag">${esc(x.role)}</span>${AV[x.id]?`<span class="tag">★ ${(AV[x.id].s/AV[x.id].n).toFixed(1)} (${AV[x.id].n})</span>`:""}<span class="tag">${esc(x.status)}</span><br>${esc(x.email)}<br><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a> · <a href="https://wa.me/91${esc(x.phone)}" target="_blank" rel="noopener">WhatsApp</a>
   <div class="a">${x.status!="approved"?`<button class="g" data-ap="${x.id}">Approve</button>`:""}${x.status!="blocked"?`<button class="r" data-bl="${x.id}">Block</button>`:""}<button data-du="${x.id}">Delete</button></div></div>`).join(""):'<div class="empty">No users yet.</div>'}
  else if(tab=="shifts"){
   h+='<div class="f">'+["all","open","full","done","cancelled","expired"].map(k=>`<button data-f="${k}" class="${flt==k?"on":""}">${k}</button>`).join("")+'</div>';
@@ -138,7 +148,8 @@ document.addEventListener("click",async e=>{const t=e.target;if(t.tagName!=="BUT
  else if(t.dataset.dl){if(confirm("Delete this sign-up?"))await deleteDoc(doc(db,"leads",t.dataset.dl))}
  else if(t.dataset.csv){download(t.dataset.csv,dataSets(false)[t.dataset.csv])}
  else if(t.dataset.sync){if($("su")){lss("kg_sheet_url",$("su").value.trim());lss("kg_sheet_tok",$("st").value.trim())}syncMsg="Sending...";const m=$("sm");if(m)m.textContent=syncMsg;await syncSheet()}
- else if(t.dataset.ap)await updateDoc(doc(db,"users",t.dataset.ap),{status:"approved"});
+ else if(t.dataset.ap){try{await giveId(t.dataset.ap,true)}catch(e){err="Could not approve: "+e.message;draw()}}
+ else if(t.dataset.ids){try{for(const x of users.filter(x=>x.status=="approved"&&!x.code).sort((a,b)=>tsMs(a.created)-tsMs(b.created)))await giveId(x.id,false)}catch(e){err="Could not assign IDs: "+e.message;draw()}}
  else if(t.dataset.bl){if(confirm("Block this user?"))await updateDoc(doc(db,"users",t.dataset.bl),{status:"blocked"})}
  else if(t.dataset.du){if(confirm("Delete this user profile?"))await deleteDoc(doc(db,"users",t.dataset.du))}
  else if(t.dataset.c){if(confirm("Cancel this shift?"))await updateDoc(doc(db,"shifts",t.dataset.c),{status:"cancelled"})}
