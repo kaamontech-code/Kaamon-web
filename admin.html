@@ -55,6 +55,10 @@ const pad=n=>String(n).padStart(2,"0");
 const tsMs=v=>v&&v.toMillis?v.toMillis():null;
 const dtm=ms=>ms?new Date(ms).toLocaleString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",hour12:true}):"";
 const hm=ms=>new Date(ms).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",hour12:true}).toUpperCase();
+const uOf=uid=>users.find(u=>u.id==uid)||null;
+const codeOf=uid=>(uOf(uid)||{}).code||"";
+const phoneOf=uid=>(uOf(uid)||{}).phone||"";
+const pf=(uid,fb)=>{const u=uOf(uid);if(!u)return esc(fb||"-");const a=AV[uid];return `<b>${esc(u.name)}</b>${u.code?` <span class="tag">${esc(u.code)}</span>`:""}${a?` <span class="tag">\u2605 ${(a.s/a.n).toFixed(1)} (${a.n})</span>`:""} \u00b7 <a href="tel:${esc(u.phone)}">${esc(u.phone)}</a> \u00b7 <a href="https://wa.me/91${esc(u.phone)}" target="_blank" rel="noopener">WhatsApp</a>`};
 const nameOf=uid=>(users.find(u=>u.id==uid)||{}).name||uid;
 let syncMsg="",syncTimer=null;
 
@@ -63,13 +67,15 @@ function dataSets(forSheet){
  const rt=(sid,by,to)=>RAT.find(r=>r.shift==sid&&r.by==by&&r.to==to);
  const real=shifts.filter(s=>s.needed);
  const U=[["ID","Name","Role","Status","Mobile","Email","Registered","Average rating","Ratings received"]].concat(users.map(x=>[x.code||"",x.name,x.role,x.status,T(x.phone),x.email,dtm(tsMs(x.created)),AV[x.id]?(AV[x.id].s/AV[x.id].n).toFixed(2):"",AV[x.id]?AV[x.id].n:0]));
- const S=[["Shift ID","Business","Worker type","Venue","Date","Start","End","Hours","Rate per hour","Workers needed","Workers taken","Total value","Status","Posted","Map link","Dress code","Notes"]].concat(real.map(s=>[s.id,s.ownerName||"",s.trade||"waiter",s.venue,s.date,fmtT(s.time),s.startAt?hm(s.startAt+s.hours*3600000):"",s.hours,s.rate,s.needed,slotsOf(s).length,s.rate*s.hours*s.needed,stat(s),dtm(tsMs(s.created)),s.map||"",s.dress||"",s.notes||""]));
- const W=[["Shift ID","Business","Venue","Date","Worker","Worker type","Status","Pay method","UPI ID","Amount","Marked paid","Receipt confirmed","Started","Finished","Minutes worked","Business rating of worker","Worker rating of business"]];
+ const S=[["Shift ID","Business","Business ID","Business mobile","Worker type","Venue","Date","Start","End","Hours","Rate per hour","Workers needed","Workers taken","Total value","Status","Posted","Map link","Dress code","Notes"]].concat(real.map(s=>[s.id,s.ownerName||"",codeOf(s.owner),T(phoneOf(s.owner)),s.trade||"waiter",s.venue,s.date,fmtT(s.time),s.startAt?hm(s.startAt+s.hours*3600000):"",s.hours,s.rate,s.needed,slotsOf(s).length,s.rate*s.hours*s.needed,stat(s),dtm(tsMs(s.created)),s.map||"",s.dress||"",s.notes||""]));
+ const W=[["Shift ID","Business","Business ID","Venue","Date","Worker","Worker ID","Worker mobile","Worker type","Status","Pay method","UPI ID","Amount","Marked paid","Receipt confirmed","Started","Finished","Minutes worked","Business rating of worker","Worker rating of business"]];
  real.forEach(s=>slotsOf(s).forEach(w=>{const st=tsMs(w.startedAt),en=tsMs(w.endedAt),a1=rt(s.id,s.owner,w.uid),a2=rt(s.id,w.uid,s.owner);
-  W.push([s.id,s.ownerName||"",s.venue,s.date,w.name,s.trade||"waiter",w.status,w.pay||"cash",w.upi||"",s.rate*s.hours,w.paid?"yes":"no",w.received?"yes":"no",dtm(st),dtm(en),st&&en?Math.round((en-st)/60000):"",a1?a1.stars:"",a2?a2.stars:""])}));
+  W.push([s.id,s.ownerName||"",codeOf(s.owner),s.venue,s.date,w.name,codeOf(w.uid),T(phoneOf(w.uid)),s.trade||"waiter",w.status,w.pay||"cash",w.upi||"",s.rate*s.hours,w.paid?"yes":"no",w.received?"yes":"no",dtm(st),dtm(en),st&&en?Math.round((en-st)/60000):"",a1?a1.stars:"",a2?a2.stars:""])}));
  const R=[["Shift ID","Venue","From","To","Stars","Comment","Date"]].concat(RAT.map(r=>[r.shift,(shifts.find(s=>s.id==r.shift)||{}).venue||"",nameOf(r.by),nameOf(r.to),r.stars,r.comment||"",dtm(tsMs(r.created))]));
  const L=[["Name","Mobile","I am","Area","Date"]].concat(LEADS.map(x=>[x.name,T(x.phone),x.who,x.area||"",dtm(tsMs(x.created))]));
- return {users:U,shifts:S,workers:W,ratings:R,leads:L}}
+ const P=pilotCalc(),A=P.A,row=(n,S,nl,nu)=>[n,S.n,S.biz,S.need,S.tk,pct(S.tk,S.need),S.dn,pct(S.dn,S.tk),S.hrs,S.val,nl,nu];
+ const PL=[["Period","Shifts posted","Businesses posting","Places needed","Places taken","Fill rate","Completed","Completion rate","Hours worked","Work value","New sign-ups","New accounts"],row("All time",A,LEADS.length,users.length)].concat(P.weeks.slice().reverse().map(w=>row("Week of "+new Date(w.a).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}),w.S,w.nl,w.nu)));
+ return {users:U,shifts:S,workers:W,ratings:R,leads:L,pilot:PL}}
 
 function toCSV(rows){return "\ufeff"+rows.map(r=>r.map(v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(",")).join("\r\n")}
 function download(name,rows){const b=new Blob([toCSV(rows)],{type:"text/csv;charset=utf-8"}),l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="kaamon-"+name+"-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(l.href),3000)}
@@ -80,7 +86,7 @@ async function syncSheet(){
  if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\/]+\/exec/.test(url)){say("Paste the web app link that ends with /exec.");return}
  if(!tok){say("Enter the secret word.");return}
  const D=dataSets(true);
- try{await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:tok,users:D.users,shifts:D.shifts,workers:D.workers,ratings:D.ratings,leads:D.leads})});
+ try{await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:tok,users:D.users,shifts:D.shifts,workers:D.workers,ratings:D.ratings,leads:D.leads,pilot:D.pilot})});
   say("Sent at "+new Date().toLocaleTimeString("en-IN")+". Open your Google Sheet to check. If it is empty, the secret word may not match.")}
  catch(e){say("Could not send: "+e.message)}}
 function queueSync(){if(ls("kg_sheet_auto")!="1"||!ls("kg_sheet_url"))return;clearTimeout(syncTimer);syncTimer=setTimeout(syncSheet,20000)}
@@ -92,7 +98,7 @@ function leadsPanel(){
  return '<div class="sub">'+LEADS.length+' website sign-up'+(LEADS.length>1?"s":"")+'</div>'+LEADS.map(x=>`<div class="card"><b>${esc(x.name)}</b><span class="tag">${esc(T[x.who]||x.who)}</span><br><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a> \u00b7 <a href="https://wa.me/91${esc(x.phone)}" target="_blank" rel="noopener">WhatsApp</a><br><span class="sub">${esc(x.area||"")} \u00b7 ${esc(dtm(tsMs(x.created)))}</span><div class="a"><button data-dl="${x.id}">Delete</button></div></div>`).join("")}
 function dataPanel(){
  return `<div class="card"><b>Download as CSV</b><div class="sub">Open the file in Google Sheets or Excel.</div>
- <div class="a" style="flex-wrap:wrap"><button data-csv="users">Users</button><button data-csv="shifts">Shifts</button><button data-csv="workers">Worker pay and time</button><button data-csv="ratings">Ratings</button><button data-csv="leads">Leads</button></div></div>
+ <div class="a" style="flex-wrap:wrap"><button data-csv="users">Users</button><button data-csv="shifts">Shifts</button><button data-csv="workers">Worker pay and time</button><button data-csv="ratings">Ratings</button><button data-csv="leads">Leads</button><button data-csv="pilot">Pilot summary</button></div></div>
  <div class="card"><b>Sync to Google Sheet</b><div class="sub">Paste the web app link from your sheet's script, and the secret word you set in it.</div>
  <input id="su" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(ls("kg_sheet_url"))}"><input id="st" placeholder="Secret word" value="${esc(ls("kg_sheet_tok"))}" style="margin-top:8px">
  <label class="ck"><input type="checkbox" id="sa" ${ls("kg_sheet_auto")=="1"?"checked":""}> Keep syncing while this page is open</label>
@@ -106,6 +112,33 @@ async function giveId(uid,approve){
   if(!u.code){const cs=await tx.get(cref),c=cs.exists()?cs.data():{},k=u.role=="business"?"b":"w",n=(c[k]||0)+1;
    tx.set(cref,Object.assign({},c,{[k]:n}));patch.code=(k=="b"?"KB-":"KW-")+String(n).padStart(4,"0")}
   tx.update(uref,patch)})}
+const pct=(a,b)=>b?Math.round(a*100/b)+"%":"-";
+function pilotCalc(){
+ const DAY=864e5,now=Date.now();
+ const wk=ms=>{const d=new Date(ms);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()};
+ const live=shifts.filter(s=>s.status!="cancelled");
+ const tk=s=>slotsOf(s).length,dn=s=>slotsOf(s).filter(w=>w.status=="done").length,nd=s=>s.needed||1;
+ const sum=L=>({n:L.length,need:L.reduce((t,s)=>t+nd(s),0),tk:L.reduce((t,s)=>t+tk(s),0),dn:L.reduce((t,s)=>t+dn(s),0),hrs:L.reduce((t,s)=>t+dn(s)*(s.hours||0),0),val:L.reduce((t,s)=>t+dn(s)*(s.hours||0)*(s.rate||0),0),biz:new Set(L.map(s=>s.owner)).size,wrk:new Set(L.flatMap(s=>slotsOf(s).filter(w=>w.status=="done").map(w=>w.uid))).size});
+ const A=sum(live),bizApproved=users.filter(u=>u.role=="business"&&u.status=="approved").length,wrkApproved=users.filter(u=>u.role!="business"&&u.status=="approved").length;
+ const perOwner={};live.forEach(s=>{perOwner[s.owner]=(perOwner[s.owner]||0)+1});
+ const repeat=Object.values(perOwner).filter(n=>n>=2).length,posted=Object.keys(perOwner).length;
+ const unfilled=live.filter(s=>stat(s)=="expired"&&!tk(s)).length;
+ const rAvg=RAT.length?(RAT.reduce((t,r)=>t+r.stars,0)/RAT.length).toFixed(1):"-";
+ const weeks=[],w0=wk(now);
+ for(let i=0;i<8;i++){const a=w0-i*7*DAY,b=a+7*DAY,inW=x=>{const c=tsMs(x.created);return c&&c>=a&&c<b};
+  weeks.push({i,a,S:sum(live.filter(inW)),nu:users.filter(inW).length,nl:LEADS.filter(inW).length})}
+ return {A,bizApproved,wrkApproved,repeat,posted,unfilled,rAvg,weeks}}
+function pilotPanel(){
+ const P=pilotCalc(),A=P.A;
+ let h='<div class="stats">'+[["Shifts posted",A.n],["Fill rate",pct(A.tk,A.need)],["Completed",pct(A.dn,A.tk)],["Hours worked",A.hrs],["Repeat businesses",P.repeat],["Avg rating",P.rAvg]].map(x=>`<div class="st"><b>${x[1]}</b><small>${x[0]}</small></div>`).join("")+'</div>';
+ h+=`<div class="card"><b>Sign-up funnel</b><br>Website sign-ups: <b>${LEADS.length}</b><br>Accounts created: <b>${users.length}</b><br>Approved: <b>${P.bizApproved}</b> businesses, <b>${P.wrkApproved}</b> workers<br>Businesses that posted a shift: <b>${P.posted}</b> of ${P.bizApproved}<br>Workers who completed a shift: <b>${A.wrk}</b> of ${P.wrkApproved}</div>`;
+ h+=`<div class="card"><b>All time</b><br>Places needed: <b>${A.need}</b> · taken: <b>${A.tk}</b> · completed: <b>${A.dn}</b><br>Shifts that expired with nobody: <b>${P.unfilled}</b><br>Work value completed: <b>${inr(A.val)}</b> (paid directly, not through KaamOn)</div>`;
+ h+='<div class="sub">Week by week (Monday to Sunday)</div>';
+ let rows="";
+ P.weeks.forEach(w=>{const S=w.S;if(!S.n&&!w.nu&&!w.nl&&w.i>0)return;
+  rows+=`<div class="card"><b>${w.i==0?"This week":"Week of "+new Date(w.a).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</b><br>Shifts posted <b>${S.n}</b> (${S.biz} business${S.biz==1?"":"es"}) · places needed <b>${S.need}</b><br>Taken <b>${S.tk}</b> (${pct(S.tk,S.need)}) · completed <b>${S.dn}</b> (${pct(S.dn,S.tk)}) · hours <b>${S.hrs}</b><br>New sign-ups <b>${w.nl}</b> · new accounts <b>${w.nu}</b></div>`});
+ h+=rows||'<div class="empty">No activity yet.</div>';
+ return h+'<div class="sub">Shifts are counted in the week they were posted. Cancelled shifts are left out.</div>'}
 function draw(){
  const u=auth.currentUser;
  if(document.activeElement&&document.activeElement.tagName=="INPUT")return;
@@ -113,7 +146,7 @@ function draw(){
  if((u.email||"").toLowerCase()!==ADMIN){$("main").innerHTML='<div class="empty">This account is not allowed here.</div><button class="big" id="out">Sign out</button>';return}
  const pend=users.filter(x=>x.status=="pending").length,openS=shifts.filter(s=>stat(s)=="open").length,act=shifts.filter(s=>stat(s)=="full").length,done=shifts.filter(s=>stat(s)=="done"),paid=shifts.reduce((t,s)=>t+s.rate*s.hours*slotsOf(s).filter(w=>w.status=="done").length,0);
  let h='<div class="stats">'+[["Pending users",pend],["Open shifts",openS],["Active",act],["Completed",done.length],["Users",users.length],["Worker pay",inr(paid)]].map(x=>`<div class="st"><b>${x[1]}</b><small>${x[0]}</small></div>`).join("")+'</div>';
- h+='<div class="f"><button data-t="users" class="'+(tab=="users"?"on":"")+'">Users</button><button data-t="shifts" class="'+(tab=="shifts"?"on":"")+'">Shifts</button><button data-t="leads" class="'+(tab=="leads"?"on":"")+'">Leads</button><button data-t="data" class="'+(tab=="data"?"on":"")+'">Data</button><button id="out">Sign out</button></div>';
+ h+='<div class="f"><button data-t="users" class="'+(tab=="users"?"on":"")+'">Users</button><button data-t="shifts" class="'+(tab=="shifts"?"on":"")+'">Shifts</button><button data-t="pilot" class="'+(tab=="pilot"?"on":"")+'">Pilot</button><button data-t="leads" class="'+(tab=="leads"?"on":"")+'">Leads</button><button data-t="data" class="'+(tab=="data"?"on":"")+'">Data</button><button id="out">Sign out</button></div>';
  if(err)h+='<p>'+esc(err)+'</p>';
  if(tab=="users"){
   const L=users.slice().sort((a,b)=>(a.status=="pending"?0:1)-(b.status=="pending"?0:1));
@@ -124,8 +157,9 @@ function draw(){
  else if(tab=="shifts"){
   h+='<div class="f">'+["all","open","full","done","cancelled","expired"].map(k=>`<button data-f="${k}" class="${flt==k?"on":""}">${k}</button>`).join("")+'</div>';
   const L=shifts.filter(s=>flt=="all"||stat(s)==flt);
-  h+=L.length?L.map(s=>`<div class="card ${stat(s)}"><b>${esc(s.venue)}</b>${s.startNow?'<span class="tag">NEEDED NOW</span>':""}<span class="tag">${esc(s.trade||"waiter")}</span><span class="tag">${NAMES[stat(s)]||esc(stat(s))}${s.needed?" "+slotsOf(s).length+"/"+s.needed:""}</span><br>${esc(fmtDate(s.date))}, ${esc(fmtT(s.time))} \u00b7 ${s.hours} hrs \u00b7 ${inr(s.rate)}/hr = <b>${inr(s.rate*s.hours)}</b>${okMap(s.map)?`<br><a href="${esc(s.map)}" target="_blank" rel="noopener">Map</a>`:s.address?"<br>Address: "+esc(s.address):""}<br>Business: ${esc(s.ownerName||"-")}${slotsOf(s).length?"<br>Waiters: "+slotsOf(s).map(w=>esc(w.name)+" ("+esc(w.status)+", "+esc(w.pay||"cash")+(w.paid?", paid":"")+(w.received?", received":"")+")").join(", "):""}
+  h+=L.length?L.map(s=>`<div class="card ${stat(s)}"><b>${esc(s.venue)}</b>${s.startNow?'<span class="tag">NEEDED NOW</span>':""}<span class="tag">${esc(s.trade||"waiter")}</span><span class="tag">${NAMES[stat(s)]||esc(stat(s))}${s.needed?" "+slotsOf(s).length+"/"+s.needed:""}</span><br>${esc(fmtDate(s.date))}, ${esc(fmtT(s.time))} \u00b7 ${s.hours} hrs \u00b7 ${inr(s.rate)}/hr = <b>${inr(s.rate*s.hours)}</b>${okMap(s.map)?`<br><a href="${esc(s.map)}" target="_blank" rel="noopener">Map</a>`:s.address?"<br>Address: "+esc(s.address):""}<br>Business: ${pf(s.owner,s.ownerName)}${slotsOf(s).map(w=>"<br>Worker: "+pf(w.uid,w.name)+" <small>("+esc(w.status)+", "+esc(w.pay||"cash")+(w.paid?", paid":"")+(w.received?", received":"")+")</small>").join("")}
   <div class="a">${stat(s)!="cancelled"&&stat(s)!="done"?`<button class="r" data-c="${s.id}">Cancel</button>`:""}${(s.status=="cancelled"||slotsOf(s).length)&&stat(s)!="done"?`<button data-o="${s.id}">Reset</button>`:""}<button data-d="${s.id}">Delete</button></div></div>`).join(""):'<div class="empty">Nothing here.</div>'}
+ else if(tab=="pilot")h+=pilotPanel();
  else if(tab=="leads")h+=leadsPanel();
  else h+=dataPanel();
  $("main").innerHTML=h}
