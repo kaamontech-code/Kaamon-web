@@ -1,95 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KaamOn</title>
-<meta name="theme-color" content="#B8432A">
-<link rel="icon" href="icon-192.png">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KaamOn: Insta help on one tap</title>
+<meta name="description" content="KaamOn connects cafes, restaurants and venues in Koramangala, Bengaluru with part-time serving captains and general helpers.">
+<meta property="og:title" content="KaamOn: Insta help on one tap"><meta property="og:description" content="KaamOn connects cafes, restaurants and venues in Koramangala, Bengaluru with part-time serving captains and general helpers."><meta property="og:type" content="website"><meta property="og:image" content="https://kaamontech-code.github.io/Kaamon-web/og-image.png"><meta name="twitter:card" content="summary_large_image"><meta property="og:url" content="https://kaamontech-code.github.io/Kaamon-web/index.html">
+<link rel="canonical" href="https://kaamontech-code.github.io/Kaamon-web/index.html"><meta name="theme-color" content="#B8432A"><link rel="icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
-<style>
-
-:root{--bg:#F1EEE8;--card:#FFFFFF;--ink:#231F1C;--mut:#6B645D;--brick:#B8432A;--brick2:#962F1A;--onb:#FFFFFF;--turm:#E9A820;--line:#E2DDD3;--ok:#2F7A4B;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#171412;--card:#221D1A;--ink:#F3EDE3;--mut:#A59B8F;--brick:#E2694B;--brick2:#C9553A;--onb:#1B0F0B;--turm:#EDB43D;--line:#3A322C;--ok:#5FB07A}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-text-size-adjust:100%}
-a{color:var(--brick)}
-:focus-visible{outline:3px solid var(--turm);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-.w{max-width:480px;margin:0 auto;padding:18px 16px 40px}
-.top{display:flex;justify-content:space-between;align-items:center}
-h1{font-size:24px;font-weight:600;letter-spacing:-.02em;margin:0;display:flex;align-items:baseline;gap:2px}
-h1 span{color:var(--turm)}
-h1 small{font-size:12px;font-weight:500;color:var(--mut);letter-spacing:0;margin-left:8px;padding:1px 9px;border:1px solid var(--line);border-radius:99px}
-.sub{color:var(--mut);font-size:13px;margin:2px 0 14px}
-h2{font-size:15px;font-weight:600;color:var(--mut);margin:24px 2px 4px}
-.link{background:none;border:0;color:var(--mut);font:inherit;font-size:13px;text-decoration:underline;padding:8px 0;cursor:pointer}
-.tl{font-size:16px;font-weight:600;color:var(--brick);margin:12px 2px 0}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;margin:12px 0}
-.card.cancelled{opacity:.6}
-.venue{font-size:17px;font-weight:600;letter-spacing:-.01em}
-.tk{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.meta{color:var(--mut);font-size:13px;margin-top:2px}
-.amt{font:600 22px/1.1 var(--mono);text-align:right;white-space:nowrap}
-.amt small{display:block;font:400 11px var(--sans);color:var(--mut);margin-top:3px}
-.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid var(--line);margin:8px 6px 0 0;background:var(--bg)}
-.t-open{background:var(--turm);border-color:transparent;color:#231F1C}
-.t-full{background:var(--ink);border-color:transparent;color:var(--bg)}
-.t-done{background:var(--ok);border-color:transparent;color:#fff}
-.t-cancelled{background:var(--line);color:var(--mut)}
-.ex{font-size:13px;margin-top:6px}
-.ex a{font-weight:500}
-.perf{position:relative;height:0;border:0;border-top:2px dashed var(--line);margin:14px -16px 12px;overflow:visible}
-.perf::before,.perf::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
-.perf::before{left:-10px}.perf::after{right:-10px}
-.perf+br{display:none}
-label{display:block;font-size:13px;color:var(--mut);font-weight:500;margin:12px 0 4px}
-input,select{width:100%;height:46px;padding:0 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:16px}
-input:focus,select:focus{outline:none;border-color:var(--brick)}
-.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
-.btn{width:100%;height:48px;margin-top:14px;border:0;border-radius:12px;background:var(--brick);color:var(--onb);font:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s,transform .08s}
-.btn:active{background:var(--brick2);transform:scale(.99)}
-.btn.alt{background:var(--ink);color:var(--bg)}
-.btn.sm{width:auto;height:34px;padding:0 12px;margin:8px 6px 0 0;font-size:13px;border-radius:9px}
-.pick{display:flex;gap:8px;margin-top:6px}
-.pick button{flex:1;height:44px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
-.pick button.on{background:var(--brick);border-color:var(--brick);color:var(--onb)}
-.otp{font:600 30px/1 var(--mono);letter-spacing:.3em;color:var(--brick);text-align:center;padding:14px 0 14px .3em;margin:8px 0;border:2px dashed var(--line);border-radius:12px}
-.avg{font-size:12px;font-weight:600;color:var(--mut)}
-.rate{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;color:var(--mut)}
-.stars button{background:none;border:0;font-size:30px;line-height:1;color:var(--turm);padding:6px 3px;cursor:pointer}
-.rated{margin-top:8px;font-size:13px;color:var(--mut)}
-.inst{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px;margin:4px 0 10px;font-size:13px}
-.inst .btn{margin:0;flex:none}
-.empty{color:var(--mut);text-align:center;padding:20px 0;font-size:14px}
-.err{color:var(--brick);font-size:13px;margin-top:6px}
-.clockbox{margin:10px 0;padding:12px;border:2px dashed var(--line);border-radius:12px;text-align:center;color:var(--mut);font-size:13px}
-.clock{font:600 34px/1.1 var(--mono);color:var(--ok);letter-spacing:.04em;margin-top:2px}
-.clk{font:600 13px var(--mono);color:var(--ok)}
-.clock-row{font-size:13px;color:var(--mut);margin:2px 0 4px}
-.mut{color:var(--mut)}
-.t-expired{background:var(--line);color:var(--mut)}
-input[id^=rc_]{height:40px;margin-top:8px;font-size:14px}
-input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;min-height:46px}
-.ck{display:flex;gap:10px;align-items:center;margin-top:14px;font-size:14px;font-weight:500;color:var(--ink)}
-.ck input{width:20px;height:20px;flex:none;accent-color:var(--brick)}
-.t-now{background:var(--brick);border-color:transparent;color:var(--onb)}
-input:disabled,select:disabled{opacity:.45}
-
-.choice{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0}
-.choice b{display:block;font-size:18px;letter-spacing:-.01em}
-.choice span{color:var(--mut);font-size:14px}
-.choice.hire{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.choice.hire span{color:var(--bg);opacity:.75}
-</style>
-</head>
-<body>
-<div class="w">
-<div class="top"><h1>KaamOn<span>.</span></h1></div>
-<div class="sub">Waiters and helpers in Koramangala, Bengaluru</div>
-<div class="tl">Insta help on one tap.</div>
-<a class="choice hire" href="business.html"><b>I want to hire</b><span>Restaurants, cafes and venues: post a shift and get workers.</span></a>
-<a class="choice" href="worker.html"><b>I want work</b><span>Serving captains and general helpers: find shifts near you.</span></a>
+<link rel="stylesheet" href="style.css">
+</head><body><div class="wrap">
+<header><a class="logo" href="./">KaamOn<i>.</i></a><nav aria-label="Main"><a href="how-it-works.html">How it works</a><a href="for-businesses.html">For businesses</a><a href="for-workers.html">For workers</a><a href="faq.html">FAQ</a><a href="about.html">About</a><a href="contact.html">Contact</a><a href="join.html">Join</a></nav></header>
+<main><div class="hero" style="grid-template-columns:1fr;padding-bottom:40px">
+ <div>
+  <h1>Insta help on one tap.</h1>
+  <p class="lead">KaamOn is a local platform that connects cafes, restaurants and event venues with verified and approved nearby servers, serving captains and general helpers on an hourly or daily basis, according to your required day and time, so busy rush hours get covered at minimal cost, helping your business grow and become more profitable.</p>
+  <p class="lead" style="margin-top:12px">It also helps people who need extra income earn it through flexible shifts.</p>
+  <div class="cta"><a class="btn dark" href="join.html">Get early access</a><a class="btn red" href="how-it-works.html">See how it works</a></div>
+  <p class="note">Now piloting in Koramangala.</p>
+ </div>
 </div>
-</body>
-</html>
+<section style="padding-top:8px">
+ <h2>How KaamOn can help you</h2>
+ <div class="two">
+  <div class="panel hire">
+   <h3>If you run a business</h3><p class="mut">Short of staff? Cover a shift without the scramble.</p>
+   <ul class="steps">
+    <li><b>+</b><span>Post a shift in about two minutes.</span></li>
+    <li><b>+</b><span>Get approved serving captains and helpers.</span></li>
+    <li><b>+</b><span>Know who is coming, and pay by cash or UPI.</span></li>
+   </ul>
+   <a class="more" href="for-businesses.html">More for businesses &rarr;</a>
+  </div>
+  <div class="panel">
+   <h3>If you want to work</h3><p class="mut">Want extra income? Work shifts that fit your day.</p>
+   <ul class="steps">
+    <li><b>+</b><span>See the pay, time and location first.</span></li>
+    <li><b>+</b><span>Choose only the shifts you want.</span></li>
+    <li><b>+</b><span>Get paid by the business after your shift.</span></li>
+   </ul>
+   <a class="more" href="for-workers.html">More for workers &rarr;</a>
+  </div>
+ </div>
+</section>
+<div style="height:40px"></div></main>
+<footer><div class="fbrand"><b>KaamOn<span style="color:var(--turm)">.</span></b><br>Insta help on one tap.<br>Pilot in Koramangala, Bengaluru.</div>
+<div class="fgrid"><div><h4>Product</h4><a href="how-it-works.html">How it works</a><a href="for-businesses.html">For businesses</a><a href="for-workers.html">For workers</a></div>
+<div><h4>Company</h4><a href="about.html">About</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a><a href="join.html">Get early access</a><a href="https://wa.me/?text=KaamOn%3A%20insta%20help%20on%20one%20tap.%20Part-time%20serving%20captains%20and%20helpers%20in%20Koramangala%2C%20Bengaluru.%20https%3A%2F%2Fkaamontech-code.github.io%2FKaamon-web%2F" target="_blank" rel="noopener">Share on WhatsApp</a><a href="mailto:kaamonfounder@gmail.com">kaamonfounder@gmail.com</a></div>
+<div><h4>Legal</h4><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms of use</a></div></div>
+<div class="fcopy">&copy; 2026 KaamOn. All rights reserved.</div></footer>
+</div></body></html>
