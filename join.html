@@ -11,7 +11,7 @@
 <main><section class="phead"><div class="eyebrow">Early access</div><h1>Be first to try KaamOn</h1><p class="lead">Leave your details and we will call you about the pilot in Koramangala.</p></section><form id="f" class="panel" style="max-width:34em;margin-top:22px" novalidate>
 <label for="n" style="margin-top:0">Your name</label><input id="n" autocomplete="name" maxlength="80">
 <label for="p">Mobile number (10 digits)</label><input id="p" inputmode="numeric" maxlength="10" autocomplete="tel">
-<label for="w">I am</label><select id="w"><option value="business">A business that needs staff</option><option value="waiter">A waiter</option><option value="helper">A general helper</option><option value="curious">Just curious</option></select>
+<label for="w">I am</label><select id="w"><option value="business">A business that needs staff</option><option value="waiter">A serving captain</option><option value="helper">A general helper</option><option value="curious">Just curious</option></select>
 <label for="a">Your area</label><input id="a" value="Koramangala" maxlength="60">
 <input id="hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
 <button class="btn red" id="go" type="submit" style="width:100%;margin-top:20px;border:0;cursor:pointer;font-family:inherit">Get early access</button>
@@ -29,12 +29,12 @@ $("f").addEventListener("submit",async e=>{e.preventDefault();
  if(!/^[6-9]\d{9}$/.test(phone))return say("Enter a valid 10-digit mobile number.","bad");
  $("go").disabled=true;say("Sending...","");
  try{await addDoc(collection(db,"leads"),{name,phone,who,area,created:serverTimestamp()});
-  $("f").innerHTML='<b style="font-size:20px">Thank you, '+name.replace(/[<>&"]/g,"")+'!</b><p class="mut" style="margin-top:8px">We will call you soon about the KaamOn pilot.</p><a class="btn dark" style="margin-top:16px" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent("KaamOn: insta help on one tap. Part-time waiters and helpers in Koramangala, Bengaluru. https://kaamontech-code.github.io/Kaamon-web/")+'">Share KaamOn on WhatsApp</a>'}
+  $("f").innerHTML='<b style="font-size:20px">Thank you, '+name.replace(/[<>&"]/g,"")+'!</b><p class="mut" style="margin-top:8px">We will call you soon about the KaamOn pilot.</p><a class="btn dark" style="margin-top:16px" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent("KaamOn: insta help on one tap. Part-time serving captains and helpers in Koramangala, Bengaluru. https://kaamontech-code.github.io/Kaamon-web/")+'">Share KaamOn on WhatsApp</a>'}
  catch(err){$("go").disabled=false;say("Could not send right now. Please try again in a moment.","bad")}});
 </script></main>
 <footer><div class="fbrand"><b>KaamOn<span style="color:var(--turm)">.</span></b><br>Insta help on one tap.<br>Pilot in Koramangala, Bengaluru.</div>
 <div class="fgrid"><div><h4>Product</h4><a href="how-it-works.html">How it works</a><a href="for-businesses.html">For businesses</a><a href="for-workers.html">For workers</a></div>
-<div><h4>Company</h4><a href="about.html">About</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a><a href="join.html">Get early access</a><a href="https://wa.me/?text=KaamOn%3A%20insta%20help%20on%20one%20tap.%20Part-time%20waiters%20and%20helpers%20in%20Koramangala%2C%20Bengaluru.%20https%3A%2F%2Fkaamontech-code.github.io%2FKaamon-web%2F" target="_blank" rel="noopener">Share on WhatsApp</a><a href="mailto:kaamonfounder@gmail.com">kaamonfounder@gmail.com</a></div>
+<div><h4>Company</h4><a href="about.html">About</a><a href="faq.html">FAQ</a><a href="contact.html">Contact</a><a href="join.html">Get early access</a><a href="https://wa.me/?text=KaamOn%3A%20insta%20help%20on%20one%20tap.%20Part-time%20serving%20captains%20and%20helpers%20in%20Koramangala%2C%20Bengaluru.%20https%3A%2F%2Fkaamontech-code.github.io%2FKaamon-web%2F" target="_blank" rel="noopener">Share on WhatsApp</a><a href="mailto:kaamonfounder@gmail.com">kaamonfounder@gmail.com</a></div>
 <div><h4>Legal</h4><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms of use</a></div></div>
 <div class="fcopy">&copy; 2026 KaamOn. All rights reserved.</div></footer>
 </div></body></html>
