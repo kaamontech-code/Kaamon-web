@@ -67,10 +67,10 @@ function dataSets(forSheet){
  const rt=(sid,by,to)=>RAT.find(r=>r.shift==sid&&r.by==by&&r.to==to);
  const real=shifts.filter(s=>s.needed);
  const U=[["ID","Name","Role","Status","Mobile","Email","Registered","Average rating","Ratings received"]].concat(users.map(x=>[x.code||"",x.name,x.role,x.status,T(x.phone),x.email,dtm(tsMs(x.created)),AV[x.id]?(AV[x.id].s/AV[x.id].n).toFixed(2):"",AV[x.id]?AV[x.id].n:0]));
- const S=[["Shift ID","Business","Business ID","Business mobile","Worker type","Venue","Date","Start","End","Hours","Rate per hour","Workers needed","Workers taken","Total value","Status","Posted","Map link","Dress code","Notes"]].concat(real.map(s=>[s.id,s.ownerName||"",codeOf(s.owner),T(phoneOf(s.owner)),s.trade||"waiter",s.venue,s.date,fmtT(s.time),s.startAt?hm(s.startAt+s.hours*3600000):"",s.hours,s.rate,s.needed,slotsOf(s).length,s.rate*s.hours*s.needed,stat(s),dtm(tsMs(s.created)),s.map||"",s.dress||"",s.notes||""]));
+ const S=[["Shift ID","Business","Business ID","Business mobile","Worker type","Venue","Date","Start","End","Hours","Rate per hour","Workers needed","Workers taken","Total value","Status","Posted","Map link","Dress code","Notes"]].concat(real.map(s=>[s.id,s.ownerName||"",codeOf(s.owner),T(phoneOf(s.owner)),trL(s.trade),s.venue,s.date,fmtT(s.time),s.startAt?hm(s.startAt+s.hours*3600000):"",s.hours,s.rate,s.needed,slotsOf(s).length,s.rate*s.hours*s.needed,stat(s),dtm(tsMs(s.created)),s.map||"",s.dress||"",s.notes||""]));
  const W=[["Shift ID","Business","Business ID","Venue","Date","Worker","Worker ID","Worker mobile","Worker type","Status","Pay method","UPI ID","Amount","Marked paid","Receipt confirmed","Started","Finished","Minutes worked","Business rating of worker","Worker rating of business"]];
  real.forEach(s=>slotsOf(s).forEach(w=>{const st=tsMs(w.startedAt),en=tsMs(w.endedAt),a1=rt(s.id,s.owner,w.uid),a2=rt(s.id,w.uid,s.owner);
-  W.push([s.id,s.ownerName||"",codeOf(s.owner),s.venue,s.date,w.name,codeOf(w.uid),T(phoneOf(w.uid)),s.trade||"waiter",w.status,w.pay||"cash",w.upi||"",s.rate*s.hours,w.paid?"yes":"no",w.received?"yes":"no",dtm(st),dtm(en),st&&en?Math.round((en-st)/60000):"",a1?a1.stars:"",a2?a2.stars:""])}));
+  W.push([s.id,s.ownerName||"",codeOf(s.owner),s.venue,s.date,w.name,codeOf(w.uid),T(phoneOf(w.uid)),trL(s.trade),w.status,w.pay||"cash",w.upi||"",s.rate*s.hours,w.paid?"yes":"no",w.received?"yes":"no",dtm(st),dtm(en),st&&en?Math.round((en-st)/60000):"",a1?a1.stars:"",a2?a2.stars:""])}));
  const R=[["Shift ID","Venue","From","To","Stars","Comment","Date"]].concat(RAT.map(r=>[r.shift,(shifts.find(s=>s.id==r.shift)||{}).venue||"",nameOf(r.by),nameOf(r.to),r.stars,r.comment||"",dtm(tsMs(r.created))]));
  const L=[["Name","Mobile","I am","Area","Date"]].concat(LEADS.map(x=>[x.name,T(x.phone),x.who,x.area||"",dtm(tsMs(x.created))]));
  const P=pilotCalc(),A=P.A,row=(n,S,nl,nu)=>[n,S.n,S.biz,S.need,S.tk,pct(S.tk,S.need),S.dn,pct(S.dn,S.tk),S.hrs,S.val,nl,nu];
@@ -94,7 +94,8 @@ function queueSync(){if(ls("kg_sheet_auto")!="1"||!ls("kg_sheet_url"))return;cle
 let LEADS=[];
 function leadsPanel(){
  if(!LEADS.length)return '<div class="empty">No sign-ups from the website yet.</div>';
- const T={business:"business",waiter:"waiter",helper:"helper",curious:"curious"};
+ const trL=t=>(t||"waiter")=="helper"?"General helper":"Serving captain";
+ const T={business:"business",waiter:"serving captain",helper:"helper",curious:"curious"};
  return '<div class="sub">'+LEADS.length+' website sign-up'+(LEADS.length>1?"s":"")+'</div>'+LEADS.map(x=>`<div class="card"><b>${esc(x.name)}</b><span class="tag">${esc(T[x.who]||x.who)}</span><br><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a> \u00b7 <a href="https://wa.me/91${esc(x.phone)}" target="_blank" rel="noopener">WhatsApp</a><br><span class="sub">${esc(x.area||"")} \u00b7 ${esc(dtm(tsMs(x.created)))}</span><div class="a"><button data-dl="${x.id}">Delete</button></div></div>`).join("")}
 function dataPanel(){
  return `<div class="card"><b>Download as CSV</b><div class="sub">Open the file in Google Sheets or Excel.</div>
@@ -157,7 +158,7 @@ function draw(){
  else if(tab=="shifts"){
   h+='<div class="f">'+["all","open","full","done","cancelled","expired"].map(k=>`<button data-f="${k}" class="${flt==k?"on":""}">${k}</button>`).join("")+'</div>';
   const L=shifts.filter(s=>flt=="all"||stat(s)==flt);
-  h+=L.length?L.map(s=>`<div class="card ${stat(s)}"><b>${esc(s.venue)}</b>${s.startNow?'<span class="tag">NEEDED NOW</span>':""}<span class="tag">${esc(s.trade||"waiter")}</span><span class="tag">${NAMES[stat(s)]||esc(stat(s))}${s.needed?" "+slotsOf(s).length+"/"+s.needed:""}</span><br>${esc(fmtDate(s.date))}, ${esc(fmtT(s.time))} \u00b7 ${s.hours} hrs \u00b7 ${inr(s.rate)}/hr = <b>${inr(s.rate*s.hours)}</b>${okMap(s.map)?`<br><a href="${esc(s.map)}" target="_blank" rel="noopener">Map</a>`:s.address?"<br>Address: "+esc(s.address):""}<br>Business: ${pf(s.owner,s.ownerName)}${slotsOf(s).map(w=>"<br>Worker: "+pf(w.uid,w.name)+" <small>("+esc(w.status)+", "+esc(w.pay||"cash")+(w.paid?", paid":"")+(w.received?", received":"")+")</small>").join("")}
+  h+=L.length?L.map(s=>`<div class="card ${stat(s)}"><b>${esc(s.venue)}</b>${s.startNow?'<span class="tag">NEEDED NOW</span>':""}<span class="tag">${esc(trL(s.trade))}</span><span class="tag">${NAMES[stat(s)]||esc(stat(s))}${s.needed?" "+slotsOf(s).length+"/"+s.needed:""}</span><br>${esc(fmtDate(s.date))}, ${esc(fmtT(s.time))} \u00b7 ${s.hours} hrs \u00b7 ${inr(s.rate)}/hr = <b>${inr(s.rate*s.hours)}</b>${okMap(s.map)?`<br><a href="${esc(s.map)}" target="_blank" rel="noopener">Map</a>`:s.address?"<br>Address: "+esc(s.address):""}<br>Business: ${pf(s.owner,s.ownerName)}${slotsOf(s).map(w=>"<br>Worker: "+pf(w.uid,w.name)+" <small>("+esc(w.status)+", "+esc(w.pay||"cash")+(w.paid?", paid":"")+(w.received?", received":"")+")</small>").join("")}
   <div class="a">${stat(s)!="cancelled"&&stat(s)!="done"?`<button class="r" data-c="${s.id}">Cancel</button>`:""}${(s.status=="cancelled"||slotsOf(s).length)&&stat(s)!="done"?`<button data-o="${s.id}">Reset</button>`:""}<button data-d="${s.id}">Delete</button></div></div>`).join(""):'<div class="empty">Nothing here.</div>'}
  else if(tab=="pilot")h+=pilotPanel();
  else if(tab=="leads")h+=leadsPanel();
@@ -187,7 +188,7 @@ document.addEventListener("click",async e=>{const t=e.target;if(t.tagName!=="BUT
  else if(t.dataset.bl){if(confirm("Block this user?"))await updateDoc(doc(db,"users",t.dataset.bl),{status:"blocked"})}
  else if(t.dataset.du){if(confirm("Delete this user profile?"))await deleteDoc(doc(db,"users",t.dataset.du))}
  else if(t.dataset.c){if(confirm("Cancel this shift?"))await updateDoc(doc(db,"shifts",t.dataset.c),{status:"cancelled"})}
- else if(t.dataset.o){if(confirm("Reset to an open shift? All waiters will be removed."))await updateDoc(doc(db,"shifts",t.dataset.o),{status:"open",slots:{}})}
+ else if(t.dataset.o){if(confirm("Reset to an open shift? All serving captains will be removed."))await updateDoc(doc(db,"shifts",t.dataset.o),{status:"open",slots:{}})}
  else if(t.dataset.d){if(confirm("Delete permanently?")){try{await deleteDoc(doc(db,"shifts",t.dataset.d,"secret","otp"))}catch(x){}await deleteDoc(doc(db,"shifts",t.dataset.d))}}
  }catch(x){err="Failed: "+x.message;draw()}});
 document.addEventListener("change",e=>{const t=e.target;
